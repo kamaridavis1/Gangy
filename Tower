@@ -3,87 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GANGY TOWER</title>
+    <title>GANGY TOWER - DELUXE</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #050505; --gb-white: #f8f8f8; --gb-black: #181818;
-            --gb-gray: #686868; --gb-lightgray: #a8a8a8;
-        }
-
-        body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: var(--bg-color); display: flex; justify-content: center; align-items: center;
-            font-family: 'Press Start 2P', monospace; color: var(--gb-black);
-            user-select: none; touch-action: none; transition: background-color 0.5s, color 0.5s;
-            overflow: hidden;
-        }
-
+        :root { --bg-color: #050505; --gb-white: #f8f8f8; --gb-black: #181818; --gb-gray: #686868; --gb-lightgray: #a8a8a8; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: var(--bg-color); display: flex; justify-content: center; align-items: center; font-family: 'Press Start 2P', monospace; color: var(--gb-black); user-select: none; touch-action: none; overflow: hidden; }
+        
         body.domain-ui { --bg-color: #0f001a; --gb-white: #1a0033; --gb-black: #e6ccff; --gb-gray: #9933ff; --gb-lightgray: #d9b3ff; animation: domainPulse 2s infinite alternate; }
         @keyframes domainPulse { 0% { box-shadow: inset 0 0 5vw #a855f7; } 100% { box-shadow: inset 0 0 15vw #6b21a8; } }
-
         body.transformed-ui { --bg-color: #1a0000; --gb-white: #000; --gb-black: #fca5a5; --gb-gray: #ef4444; --gb-lightgray: #7f1d1d; }
 
-        #game-wrapper {
-            position: relative; width: 100%; max-width: 900px; aspect-ratio: 3 / 2;
-            background-color: var(--gb-white); overflow: hidden; border: 0.5vw solid var(--gb-black);
-            box-shadow: 0 10px 50px rgba(0,0,0,0.9); image-rendering: pixelated; transition: all 0.1s;
-        }
-
-        #game-wrapper::after {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
-            background-size: 100% 4px; z-index: 5; pointer-events: none;
-        }
-
+        #game-wrapper { position: relative; width: 100%; max-width: 900px; aspect-ratio: 3 / 2; background-color: var(--gb-white); overflow: hidden; border: 0.5vw solid var(--gb-black); box-shadow: 0 10px 50px rgba(0,0,0,0.9); image-rendering: pixelated; transition: all 0.1s; }
+        #game-wrapper::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%); background-size: 100% 4px; z-index: 5; pointer-events: none; }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        
         #shatterCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 45; pointer-events: none; }
-
         #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; display: flex; flex-direction: column; }
         .hidden { display: none !important; }
 
-        #floor-indicator {
-            position: absolute; top: 0.5vw; left: 50%; transform: translateX(-50%);
-            background: var(--gb-black); color: var(--gb-white); padding: 0.5vw 1vw;
-            font-size: 1vw; border-radius: 0.5vw; border: 0.2vw solid var(--gb-gray); z-index: 15;
-            text-align: center; letter-spacing: 0.1vw;
-        }
-
-        .hud-box {
-            position: absolute; background: var(--gb-white); border: 0.4vw solid var(--gb-black);
-            border-radius: 0.5vw; padding: 1vw; box-shadow: 0.4vw 0.4vw 0 rgba(0,0,0,0.3); z-index: 12;
-        }
-
+        #top-bar { position: absolute; top: 0.5vw; left: 50%; transform: translateX(-50%); display: flex; gap: 1vw; z-index: 15; }
+        .top-indicator { background: var(--gb-black); color: var(--gb-white); padding: 0.5vw 1vw; font-size: 1vw; border-radius: 0.5vw; border: 0.2vw solid var(--gb-gray); text-align: center; }
+        .hud-box { position: absolute; background: var(--gb-white); border: 0.4vw solid var(--gb-black); border-radius: 0.5vw; padding: 1vw; box-shadow: 0.4vw 0.4vw 0 rgba(0,0,0,0.3); z-index: 12; }
         .hud-name { font-size: 1.4vw; margin-bottom: 0.5vw; text-transform: uppercase; color: var(--gb-black); }
         .hud-lv { font-size: 0.9vw; float: right; color: var(--gb-black); }
         .hp-container { display: flex; align-items: center; margin-bottom: 0.5vw; background: var(--gb-black); border-radius: 0.3vw; padding: 0.2vw 0.5vw; }
         .hp-label { color: #facc15; font-size: 1vw; margin-right: 0.5vw; }
         .hp-bar-bg { flex-grow: 1; height: 1vw; background: var(--gb-gray); border: 0.2vw solid var(--gb-black); position: relative; }
         .hp-bar-fill { height: 100%; background: #22c55e; width: 100%; transition: width 0.3s; }
-        .hp-text { font-size: 1.2vw; text-align: right; color: var(--gb-black); }
+        .hp-text { font-size: 1.2vw; text-align: right; color: var(--gb-black); margin-bottom: 0.5vw; }
+        .status-text { font-size: 0.8vw; color: #3b82f6; text-align: right; }
 
         #enemy-hud { top: 3vw; left: 2vw; width: 35%; }
         #player-hud { bottom: 33%; right: 2vw; width: 40%; }
-        
         .vulnerable-shake { animation: vulnShake 0.3s infinite; border-color: #ef4444 !important; background-color: #fee2e2 !important; }
         @keyframes vulnShake { 0%{transform:translateX(0);} 25%{transform:translateX(-0.5vw);} 75%{transform:translateX(0.5vw);} }
 
-        #bottom-panel {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 30%;
-            background: var(--gb-white); border-top: 0.5vw solid var(--gb-black);
-            display: flex; pointer-events: auto; box-sizing: border-box; z-index: 15;
-        }
+        #bottom-panel { position: absolute; bottom: 0; left: 0; width: 100%; height: 30%; background: var(--gb-white); border-top: 0.5vw solid var(--gb-black); display: flex; pointer-events: auto; box-sizing: border-box; z-index: 15; }
+        #dialogue-box { flex: 1; padding: 2vw; font-size: 1.4vw; line-height: 1.6; cursor: pointer; border-right: 0.5vw solid var(--gb-black); color: var(--gb-black); position:relative;}
+        #action-menu, #moves-menu, #items-menu { width: 50%; padding: 1vw; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5vw; box-sizing: border-box; align-content: center; }
 
-        #dialogue-box { flex: 1; padding: 2vw; font-size: 1.4vw; line-height: 1.6; cursor: pointer; border-right: 0.5vw solid var(--gb-black); color: var(--gb-black); }
-        
-        #action-menu, #moves-menu { width: 45%; padding: 1vw; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5vw; box-sizing: border-box; align-content: center; }
-
-        .menu-btn {
-            background: var(--gb-white); border: 0.3vw solid var(--gb-black); color: var(--gb-black);
-            border-radius: 0.5vw; font-family: 'Press Start 2P', monospace; font-size: 0.8vw;
-            cursor: pointer; text-transform: uppercase; transition: 0.1s; padding: 0.8vw 0.5vw;
-        }
+        .menu-btn { background: var(--gb-white); border: 0.3vw solid var(--gb-black); color: var(--gb-black); border-radius: 0.5vw; font-family: 'Press Start 2P', monospace; font-size: 0.8vw; cursor: pointer; text-transform: uppercase; transition: 0.1s; padding: 0.8vw 0.5vw; }
         .menu-btn:hover { background: var(--gb-lightgray); transform: scale(1.03); }
         .menu-btn:active { background: var(--gb-gray); color: white; }
         .menu-btn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -91,22 +49,9 @@
         @keyframes pulseBtn { from {transform: scale(1);} to {transform: scale(1.05); box-shadow: 0 0 10px #ef4444;} }
 
         .glitch-effect { animation: guiGlitch 0.15s both infinite; }
-        @keyframes guiGlitch { 
-            0% { filter: invert(0) drop-shadow(0 0 0 red); transform: translate(0); } 
-            25% { filter: invert(1) hue-rotate(90deg) drop-shadow(1vw 0 0 red); transform: translate(-1vw, 1vw); } 
-            50% { filter: hue-rotate(180deg) drop-shadow(-1vw 0 0 blue); transform: translate(1vw, -1vw); } 
-            100% { filter: invert(0) drop-shadow(0 0 0 red); transform: translate(0); } 
-        }
-
+        @keyframes guiGlitch { 0% { filter: invert(0) drop-shadow(0 0 0 red); transform: translate(0); } 25% { filter: invert(1) hue-rotate(90deg) drop-shadow(1vw 0 0 red); transform: translate(-1vw, 1vw); } 50% { filter: hue-rotate(180deg) drop-shadow(-1vw 0 0 blue); transform: translate(1vw, -1vw); } 100% { filter: invert(0) drop-shadow(0 0 0 red); transform: translate(0); } }
         .shatter-shake { animation: shatterShake 0.05s infinite !important; }
-        @keyframes shatterShake { 
-            0% { transform: translate(3vw, 3vw) rotate(2deg); filter: invert(1) saturate(5); }
-            25% { transform: translate(-3vw, -3vw) rotate(-2deg); filter: invert(0) hue-rotate(180deg); }
-            50% { transform: translate(3vw, -3vw) rotate(2deg); filter: sepia(1) hue-rotate(300deg) saturate(10); }
-            75% { transform: translate(-3vw, 3vw) rotate(-2deg); filter: invert(1) brightness(2); }
-            100% { transform: translate(0, 0) rotate(0); filter: invert(0); }
-        }
-
+        @keyframes shatterShake { 0% { transform: translate(3vw, 3vw) rotate(2deg); filter: invert(1) saturate(5); } 25% { transform: translate(-3vw, -3vw) rotate(-2deg); filter: invert(0) hue-rotate(180deg); } 50% { transform: translate(3vw, -3vw) rotate(2deg); filter: sepia(1) hue-rotate(300deg) saturate(10); } 75% { transform: translate(-3vw, 3vw) rotate(-2deg); filter: invert(1) brightness(2); } 100% { transform: translate(0, 0) rotate(0); filter: invert(0); } }
         #flash-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: white; z-index: 44; opacity: 0; pointer-events: none; transition: opacity 0.05s; }
         .super-flash { animation: superFlashAnim 0.5s ease-out; }
         @keyframes superFlashAnim { 0% { opacity: 1; background: white; } 50% { opacity: 1; background: red; } 100% { opacity: 0; background: white; } }
@@ -114,32 +59,26 @@
         #cutscene-layer, #clash-layer { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 40; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.85); pointer-events: auto; }
         .cinematic-text { color: white; font-size: 4vw; text-shadow: 0.5vw 0.5vw 0 #ef4444; animation: cinematicSlide 0.4s ease-out forwards; text-align: center; line-height: 1.2; }
         @keyframes cinematicSlide { 0% { transform: scale(5) rotate(-10deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
-
         #clash-bar-container { width: 80%; height: 4vw; background: #333; border: 0.5vw solid white; margin-top: 2vw; box-shadow: 0 0 2vw #3b82f6; }
         #clash-bar-fill { height: 100%; width: 50%; background: #3b82f6; transition: width 0.1s; }
-        .mash-btn { margin-top: 3vw; padding: 2vw 4vw; font-size: 3vw; background: #ef4444; color: white; border: 0.5vw solid white; cursor: pointer; font-family: 'Press Start 2P'; border-radius: 1vw; box-shadow: 0 1vw 0 #991b1b; transition: 0.1s; }
-        .mash-btn:active { transform: translateY(1vw); box-shadow: 0 0 0 #991b1b; }
+        .mash-btn { margin-top: 3vw; padding: 2vw 4vw; font-size: 3vw; background: #ef4444; color: white; border: 0.5vw solid white; cursor: pointer; font-family: 'Press Start 2P'; border-radius: 1vw; }
 
-        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; pointer-events: auto; z-index: 50; background: var(--gb-white); }
+        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; pointer-events: auto; z-index: 50; background: var(--gb-white); box-sizing: border-box; }
         h1 { font-size: 4vw; color: var(--gb-black); margin-bottom: 1vw; text-shadow: 0.4vw 0.4vw 0 var(--gb-lightgray); }
-        h2 { font-size: 1.5vw; color: var(--gb-gray); margin-bottom: 3vw; line-height: 1.5; }
+        h2 { font-size: 1.5vw; color: var(--gb-gray); margin-bottom: 2vw; line-height: 1.5; }
         .big-btn { padding: 1.5vw 3vw; font-size: 1.5vw; background: var(--gb-black); color: var(--gb-white); border: 0.5vw solid var(--gb-gray); cursor: pointer; font-family: 'Press Start 2P'; margin-bottom: 1vw; width: 75%; transition: 0.2s; }
         .big-btn:hover { background: var(--gb-gray); transform: scale(1.05); }
 
-        #loot-container { display: flex; gap: 1vw; width: 95%; justify-content: center; margin-bottom: 2vw; }
-        .loot-card {
-            background: var(--gb-black); color: white; border: 0.4vw solid var(--gb-gray); border-radius: 1vw;
-            width: 32%; padding: 1.5vw 1vw; display: flex; flex-direction: column; align-items: center;
-            cursor: pointer; transition: 0.2s; box-sizing: border-box; position: relative; overflow: hidden;
-        }
-        .loot-card::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%); opacity:0; transition: 0.3s; }
-        .loot-card:hover::before { opacity: 1; }
-        .loot-card:hover { transform: translateY(-1vw) scale(1.05); border-color: white; box-shadow: 0 1vw 3vw rgba(0,0,0,0.8); z-index: 10; }
-        .loot-title { font-size: 1.2vw; color: #facc15; margin-bottom: 1vw; text-align: center; height: 3vw; line-height: 1.5vw; display: flex; align-items: center; justify-content: center; width: 100%; }
-        .loot-desc { font-size: 0.8vw; color: #cbd5e1; text-align: center; line-height: 1.4; }
-        .loot-type { font-size: 0.7vw; padding: 0.5vw; border-radius: 0.3vw; margin-top: 1vw; background: #333; }
-        
-        #replace-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1vw; width: 80%; margin-bottom: 2vw; }
+        .slider-container { margin: 2vw 0; display: flex; flex-direction: column; align-items: center; width: 60%; }
+        input[type=range] { width: 100%; margin-top: 1vw; }
+        .credits { position: absolute; bottom: 1vw; right: 1vw; font-size: 1vw; color: var(--gb-gray); }
+
+        .shop-grid, #loot-container, #replace-grid { display: flex; flex-wrap: wrap; gap: 1vw; width: 95%; justify-content: center; margin-bottom: 2vw; }
+        .card { background: var(--gb-black); color: white; border: 0.4vw solid var(--gb-gray); border-radius: 1vw; width: 30%; padding: 1vw; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.2s; box-sizing: border-box; position: relative; overflow: hidden; }
+        .card:hover { transform: translateY(-0.5vw) scale(1.05); border-color: white; box-shadow: 0 1vw 2vw rgba(0,0,0,0.8); z-index: 10; }
+        .card-title { font-size: 1vw; color: #facc15; margin-bottom: 0.5vw; text-align: center; height: 2.5vw; }
+        .card-desc { font-size: 0.7vw; color: #cbd5e1; text-align: center; line-height: 1.4; margin-bottom:0.5vw; }
+        .card-price { font-size: 0.8vw; color: #4ade80; margin-top: auto; }
 
         .blink { animation: blinker 1s linear infinite; }
         @keyframes blinker { 50% { opacity: 0; } }
@@ -153,45 +92,38 @@
     <div id="flash-overlay"></div>
 
     <div id="ui-layer">
-        <div id="floor-indicator" class="hidden">TOWER FLOOR: <span id="floor-num">1</span></div>
+        <div id="top-bar" class="hidden">
+            <div class="top-indicator">FLOOR: <span id="floor-num">1</span></div>
+            <div class="top-indicator" style="color:#4ade80;">$ <span id="p-money">0</span></div>
+        </div>
 
         <div id="battle-ui" class="hidden">
             <div id="enemy-hud" class="hud-box">
                 <div class="hud-name" id="e-name">Enemy</div>
                 <div class="hud-lv" id="e-lv">Lv1</div>
-                <div class="hp-container">
-                    <span class="hp-label">HP</span>
-                    <div class="hp-bar-bg"><div class="hp-bar-fill" id="e-hp-bar"></div></div>
-                </div>
+                <div class="hp-container"><span class="hp-label">HP</span><div class="hp-bar-bg"><div class="hp-bar-fill" id="e-hp-bar"></div></div></div>
             </div>
 
             <div id="player-hud" class="hud-box">
                 <div class="hud-name" id="p-name">PLAYER</div>
                 <div class="hud-lv" id="p-lv">Lv1</div>
-                <div class="hp-container">
-                    <span class="hp-label">HP</span>
-                    <div class="hp-bar-bg"><div class="hp-bar-fill" id="p-hp-bar"></div></div>
-                </div>
-                <div class="hp-container" style="margin-bottom:0.2vw;">
-                    <span class="hp-label" style="color:#a855f7;">DOM</span>
-                    <div class="hp-bar-bg" style="background:#333;"><div class="hp-bar-fill" id="p-domain-bar" style="background:#a855f7; width:0%;"></div></div>
-                </div>
+                <div class="hp-container"><span class="hp-label">HP</span><div class="hp-bar-bg"><div class="hp-bar-fill" id="p-hp-bar"></div></div></div>
+                <div class="hp-container" style="margin-bottom:0.2vw;"><span class="hp-label" style="color:#a855f7;">DOM</span><div class="hp-bar-bg" style="background:#333;"><div class="hp-bar-fill" id="p-domain-bar" style="background:#a855f7; width:0%;"></div></div></div>
                 <div class="hp-text" id="p-hp-text">100/100</div>
+                <div class="status-text" id="p-status"></div>
             </div>
 
             <div id="bottom-panel">
-                <div id="dialogue-box" onclick="advanceText()">
-                    <span id="dialogue-text"></span><span id="dialogue-arrow" class="blink hidden">▼</span>
-                </div>
-                
+                <div id="dialogue-box" onclick="advanceText()"><span id="dialogue-text"></span><span id="dialogue-arrow" class="blink hidden">▼</span></div>
                 <div id="action-menu" class="hidden">
-                    <button class="menu-btn" onclick="openMoves()">MOVES</button>
-                    <button class="menu-btn" id="btn-domain" onclick="handleAction('domain')" style="color:#a855f7;" disabled>DOMAIN (0/5)</button>
-                    <button class="menu-btn" id="btn-heal" onclick="handleAction('heal')">HEAL</button>
-                    <button class="menu-btn" id="btn-ultimate" onclick="handleAction('ultimate')" style="color:#ef4444; font-weight:bold;">ULTIMATE</button>
+                    <button class="menu-btn" onclick="openMenu('moves')">MOVES</button>
+                    <button class="menu-btn" onclick="openMenu('items')">ITEMS</button>
+                    <button class="menu-btn" id="btn-domain" onclick="handleAction('domain')" style="color:#a855f7;">DOMAIN</button>
+                    <button class="menu-btn" id="btn-awaken" onclick="handleAction('awaken')" style="color:#eab308;">AWAKEN</button>
+                    <button class="menu-btn" id="btn-ultimate" onclick="handleAction('ultimate')" style="color:#ef4444; font-weight:bold; grid-column: span 2;">ULTIMATE</button>
                 </div>
-
                 <div id="moves-menu" class="hidden"></div>
+                <div id="items-menu" class="hidden"></div>
             </div>
         </div>
 
@@ -202,18 +134,29 @@
             <button class="mash-btn" onclick="mashClash()">MASH CLICK!</button>
         </div>
 
-        <!-- System Screens -->
         <div id="start-screen" class="full-screen">
             <h1 style="font-size: 5vw; color: #3b82f6;">GANGY TOWER</h1>
-            <h2>Climb infinitely.<br>Spawn as a random legend.<br>Shatter reality.</h2>
-            <button class="big-btn" onclick="initCharacterAndStart()">ENTER TOWER</button>
+            <h2>Climb infinitely. Survive. Awaken.</h2>
+            <div class="slider-container">
+                <label for="diff-slider" style="font-size: 1.2vw; color: #a8a8a8;">DIFFICULTY: <span id="diff-label">NORMAL</span></label>
+                <input type="range" id="diff-slider" min="0.5" max="2.0" step="0.5" value="1.0" oninput="updateDiff()">
+            </div>
+            <button class="big-btn" onclick="initGame()">ENTER TOWER</button>
+            <div class="credits">Made by Kamari Davis</div>
         </div>
 
         <div id="loot-screen" class="full-screen hidden" style="background:var(--gb-black); color:white;">
-            <h1 style="color:white; text-shadow:none; font-size:3vw; margin-top: 1vw;">FLOOR CLEARED!</h1>
-            <h2 style="color:#a8a8a8; margin-bottom: 2vw; font-size: 1vw;">Select 1 new technique to learn:</h2>
+            <h1 style="color:white; text-shadow:none; font-size:3vw;">FLOOR CLEARED!</h1>
+            <h2 style="color:#a8a8a8; font-size: 1vw;">Select 1 technique to learn:</h2>
             <div id="loot-container"></div>
-            <button class="big-btn" style="background:#333; width: 40%; font-size: 1vw; padding: 1vw;" onclick="skipLoot()">SKIP</button>
+            <button class="big-btn" style="background:#333; width: 40%; font-size: 1vw; padding: 1vw;" onclick="skipMenu('loot')">SKIP</button>
+        </div>
+
+        <div id="shop-screen" class="full-screen hidden" style="background:#1e3a8a; color:white;">
+            <h1 style="color:#facc15; text-shadow:none; font-size:3vw;">MYSTERIOUS SHOP</h1>
+            <h2 style="color:#bfdbfe; font-size: 1.2vw;">Buy items & techniques! (Money: $<span id="shop-money"></span>)</h2>
+            <div id="shop-grid" class="shop-grid"></div>
+            <button class="big-btn" style="background:#1e40af; width: 40%; font-size: 1vw; padding: 1vw;" onclick="skipMenu('shop')">LEAVE SHOP</button>
         </div>
 
         <div id="replace-screen" class="full-screen hidden" style="background:#1e1b4b; color:white;">
@@ -232,74 +175,91 @@
 </div>
 
 <script>
-    // --- GANGY TOWER CHARACTER ROSTER ---
+    // --- MASSIVE DATA DICTIONARIES ---
     const CHARACTERS = [
         { name: "NICKOLAS", maxHp: 150, atk: 30, color: "#3b82f6", ultName: "SIGMA STARE", ultType: "BEAM", msg: "Nickolas locks in with devastating intensity!" },
-        { name: "WILLSHAWN", maxHp: 100, atk: 45, color: "#ef4444", ultName: "WILLSHAWN'S WRATH", ultType: "BURST", msg: "Willshawn unleashes an explosive fury!" },
+        { name: "WILLSHAWN", maxHp: 100, atk: 45, color: "#ef4444", ultName: "WILLSHAWN WRATH", ultType: "BURST", msg: "Willshawn unleashes explosive fury!" },
         { name: "NATHAN", maxHp: 200, atk: 20, color: "#8b5cf6", ultName: "EARTH SHATTER", ultType: "QUAKE", msg: "Nathan brings down the weight of the world!" },
-        { name: "CARLOS", maxHp: 130, atk: 35, color: "#10b981", ultName: "CARLOS CYCLONE", ultType: "SLASH", msg: "Carlos spins up a tornado of pure cutting power!" },
-        { name: "KAMARI", maxHp: 90, atk: 50, color: "#f59e0b", ultName: "KAMARI CANNON", ultType: "BEAM", msg: "Kamari fires a concentrated laser of destruction!" },
-        { name: "DAMIN", maxHp: 140, atk: 25, color: "#000000", ultName: "SOUL SIPHON", ultType: "BURST", msg: "Damin drains the absolute lifeforce of the arena!" },
-        { name: "LEGEND", maxHp: 160, atk: 35, color: "#fbbf24", ultName: "LEGENDARY STRIKE", ultType: "BEAM", msg: "Legend descends with a mythical golden blast!" },
-        { name: "THEO", maxHp: 120, atk: 40, color: "#06b6d4", ultName: "THEO'S THEOREM", ultType: "GLITCH", msg: "Theo mathematically shatters the fabric of reality!" },
-        { name: "DOMONIC", maxHp: 180, atk: 28, color: "#dc2626", ultName: "DOMINATION", ultType: "QUAKE", msg: "Domonic crushes the opponent with absolute force!" },
-        { name: "KEITH", maxHp: 110, atk: 42, color: "#f472b6", ultName: "KEITH'S KATANA", ultType: "SLASH", msg: "Keith performs a dimension-slicing iaido strike!" },
-        { name: "NATE", maxHp: 170, atk: 32, color: "#4f46e5", ultName: "NATE'S NIGHTMARE", ultType: "BURST", msg: "Nate plunges the enemy into pure shadow!" },
-        { name: "AVERY", maxHp: 130, atk: 38, color: "#ec4899", ultName: "AVERY'S AURA", ultType: "BEAM", msg: "Avery releases a spiritual burst of pure magic!" }
+        { name: "CARLOS", maxHp: 130, atk: 35, color: "#10b981", ultName: "CARLOS CYCLONE", ultType: "SLASH", msg: "Carlos spins up a tornado of cutting power!" },
+        { name: "KAMARI", maxHp: 90, atk: 50, color: "#f59e0b", ultName: "KAMARI CANNON", ultType: "BEAM", msg: "Kamari fires a concentrated laser!" },
+        { name: "DAMIN", maxHp: 140, atk: 25, color: "#4b5563", ultName: "SOUL SIPHON", ultType: "BURST", msg: "Damin drains the lifeforce of the arena!" },
+        { name: "LEGEND", maxHp: 160, atk: 35, color: "#fbbf24", ultName: "LEGEND STRIKE", ultType: "BEAM", msg: "Legend descends with a mythical blast!" },
+        { name: "THEO", maxHp: 120, atk: 40, color: "#06b6d4", ultName: "THEO THEOREM", ultType: "GLITCH", msg: "Theo mathematically shatters reality!" },
+        { name: "DOMONIC", maxHp: 180, atk: 28, color: "#dc2626", ultName: "DOMINATION", ultType: "QUAKE", msg: "Domonic crushes the opponent with force!" },
+        { name: "KEITH", maxHp: 110, atk: 42, color: "#f472b6", ultName: "KEITH KATANA", ultType: "SLASH", msg: "Keith performs a dimension-slicing strike!" },
+        { name: "NATE", maxHp: 170, atk: 32, color: "#4f46e5", ultName: "NATE NIGHTMARE", ultType: "BURST", msg: "Nate plunges the enemy into pure shadow!" },
+        { name: "AVERY", maxHp: 130, atk: 38, color: "#ec4899", ultName: "AVERY AURA", ultType: "BEAM", msg: "Avery releases a spiritual burst of magic!" }
     ];
 
-    // --- ANIME MOVE DATABASE ---
-    const ANIME_MOVES = [
-        { name: "BLACK FLASH", power: 3.0, type: "atk", color: "#000000", desc: "A distortion in space. Massive critical damage." },
-        { name: "CLEAVE", power: 1.8, type: "atk", color: "#ef4444", desc: "Adjusts to toughness. High slash damage." },
-        { name: "DISMANTLE", power: 1.4, type: "atk", color: "#f87171", desc: "A fast flying invisible slashing attack." },
-        { name: "TECHNIQUE: RED", power: 2.5, type: "recoil", color: "#ef4444", desc: "Repels with massive force. Recoil damage." },
-        { name: "TECHNIQUE: BLUE", power: 1.6, type: "vampire", color: "#3b82f6", desc: "Attracts and crushes. Heals slightly." },
-        { name: "STRAW DOLL", power: 1.5, type: "atk", color: "#9333ea", desc: "Strikes the soul directly through resonance." },
-        { name: "KAMEHAMEHA", power: 1.8, type: "atk", color: "#60a5fa", desc: "The classic concentrated energy wave." },
-        { name: "FINAL FLASH", power: 2.5, type: "atk", color: "#fef08a", desc: "Devastating golden energy blast." },
-        { name: "SPIRIT BOMB", power: 3.8, type: "recoil", color: "#bae6fd", desc: "Gathered energy. High recoil due to charge time." },
-        { name: "DESTRUCTO DISC", power: 2.1, type: "atk", color: "#fde047", desc: "A sharp disc that cuts through anything." },
-        { name: "KAIO-KEN", power: 0, type: "buff", color: "#ef4444", desc: "Multiplies stats. Huge ATK buff." },
-        { name: "RASENGAN", power: 1.7, type: "atk", color: "#93c5fd", desc: "A spinning sphere of concentrated chakra." },
-        { name: "CHIDORI", power: 2.1, type: "recoil", color: "#60a5fa", desc: "Lightning blade. High speed, causes recoil." },
-        { name: "AMATERASU", power: 1.6, type: "vampire", color: "#111111", desc: "Inextinguishable black flames. Drains life." },
-        { name: "8 INNER GATES", power: 4.0, type: "recoil", color: "#ef4444", desc: "Breaks limiters. Utterly destroys user's body." },
-        { name: "GETSUGA TENSHO", power: 1.9, type: "atk", color: "#38bdf8", desc: "A massive crescent energy slash." },
-        { name: "MUGETSU", power: 4.5, type: "recoil", color: "#000000", desc: "The final Getsuga. Massive damage and recoil." },
-        { name: "GUM-GUM PISTOL", power: 1.3, type: "atk", color: "#fca5a5", desc: "Stretching kinetic punch." },
-        { name: "CONQUEROR HAKI", power: 1.9, type: "atk", color: "#fef08a", desc: "Overwhelms the weak-willed instantly." },
-        { name: "DIVINE DEPARTURE", power: 2.9, type: "atk", color: "#ef4444", desc: "A legendary slash from the Pirate King." },
-        { name: "WATER WHEEL", power: 1.4, type: "atk", color: "#3b82f6", desc: "Spinning liquid slash." },
-        { name: "HINOKAMI KAGURA", power: 2.5, type: "recoil", color: "#f97316", desc: "Dance of the Fire God. Burns user." },
-        { name: "JAJANKEN ROCK", power: 2.6, type: "atk", color: "#f97316", desc: "Massive concentrated aura punch." },
-        { name: "BUNGEE GUM", power: 1.3, type: "vampire", color: "#ec4899", desc: "Has properties of rubber and gum. Heals." },
-        { name: "DETROIT SMASH", power: 2.4, type: "recoil", color: "#10b981", desc: "100% power! Breaks user's bones." },
-        { name: "ORA ORA RUSH", power: 2.0, type: "atk", color: "#a855f7", desc: "Furious barrage of stand punches." },
-        { name: "TIME STOP", power: 0, type: "buff", color: "#ffffff", desc: "Za Warudo! Freezes time. Free ATK boost." },
-        { name: "SERIOUS PUNCH", power: 5.0, type: "recoil", color: "#7f1d1d", desc: "The Earth splits. Massive recoil." },
-        { name: "DIMENSION SLASH", power: 2.7, type: "atk", color: "#4b5563", desc: "Cuts through space itself." }
+    const TRANSFORMATIONS = [
+        { name: "SUPER SAIYAN", mult: 1.5, color: "#fef08a", msg: "Hair turns golden. Power surges!" },
+        { name: "SUPER SAIYAN 2", mult: 1.8, color: "#fde047", msg: "Sparks of lightning surround the aura!" },
+        { name: "SUPER SAIYAN 3", mult: 2.2, color: "#eab308", msg: "Massive golden hair, immense pressure!" },
+        { name: "SSGSS (BLUE)", mult: 2.5, color: "#3b82f6", msg: "God ki mixed with Super Saiyan!" },
+        { name: "ULTRA INSTINCT", mult: 3.0, color: "#e2e8f0", msg: "The body moves completely on its own!" },
+        { name: "ULTRA EGO", mult: 3.0, color: "#9333ea", msg: "Power driven entirely by battle lust!" },
+        { name: "GEAR 2", mult: 1.4, color: "#fca5a5", msg: "Blood pumps faster, steam rises!" },
+        { name: "GEAR 3", mult: 1.6, color: "#ef4444", msg: "Bones inflated to giant proportions!" },
+        { name: "GEAR 4: BOUNCEMAN", mult: 2.2, color: "#b91c1c", msg: "Haki coated rubber muscle balloon!" },
+        { name: "GEAR 4: SNAKEMAN", mult: 2.3, color: "#dc2626", msg: "Extreme speed and unpredictable strikes!" },
+        { name: "GEAR 5 (NIKA)", mult: 3.0, color: "#ffffff", msg: "Drums of Liberation! Total freedom!" },
+        { name: "KYUUBI MODE", mult: 2.0, color: "#f97316", msg: "Cloaked in burning orange chakra!" },
+        { name: "SIX PATHS SAGE", mult: 2.6, color: "#fef08a", msg: "Truth-seeking orbs float behind!" },
+        { name: "BARYON MODE", mult: 3.5, color: "#ef4444", msg: "Nuclear fusion of chakra! Ultimate power!" },
+        { name: "BANKAI", mult: 2.0, color: "#000000", msg: "Sword perfectly released!" },
+        { name: "VASTO LORDE", mult: 2.4, color: "#b91c1c", msg: "A terrifying hollow roar shakes the area!" },
+        { name: "TRUE BANKAI", mult: 2.8, color: "#0ea5e9", msg: "The ultimate blade configuration!" },
+        { name: "ONE FOR ALL 100%", mult: 2.5, color: "#10b981", msg: "Full cowling limits broken!" },
+        { name: "EIGHT GATES", mult: 4.0, color: "#ef4444", msg: "Blood boils like fire. Life burns away!" },
+        { name: "CURSE MARK L2", mult: 1.7, color: "#1f2937", msg: "Dark wings sprout, skin turns dark!" },
+        { name: "SAGE MODE", mult: 1.8, color: "#fbbf24", msg: "Nature energy perfectly balanced!" },
+        { name: "DEMON MARK", mult: 2.1, color: "#9333ea", msg: "Black demonic crests cover the body!" },
+        { name: "DRAGON FORCE", mult: 1.9, color: "#ef4444", msg: "Scales form! Dragon slayer magic peaks!" },
+        { name: "KARMA SEAL", mult: 2.3, color: "#06b6d4", msg: "Alien combat data overrides the body!" },
+        { name: "HOLLOWFICATION", mult: 1.6, color: "#ffffff", msg: "A bone mask covers the face!" },
+        { name: "SUPER NAMEKIAN", mult: 1.5, color: "#22c55e", msg: "Assimilation of pure warrior spirit!" },
+        { name: "GOLDEN FORM", mult: 2.4, color: "#eab308", msg: "A shining golden carapace!" },
+        { name: "BLACK FORM", mult: 2.9, color: "#111827", msg: "The absolute peak of cosmic evolution!" },
+        { name: "LETZT STIL", mult: 2.0, color: "#38bdf8", msg: "Gathering all reishi, abandoning the future!" },
+        { name: "VOLLSTANDIG", mult: 2.2, color: "#bae6fd", msg: "Angelic wings of absolute light!" }
     ];
 
-    // Engine Base Setup
+    const ALL_ATTACKS = [
+        // JJK
+        {n:"BLACK FLASH", p:3.0, t:"atk", c:"#000000", d:"Distortion in space. Max crit."}, {n:"CLEAVE", p:1.8, t:"atk", c:"#ef4444", d:"Adjusts to toughness. High slash."}, {n:"DISMANTLE", p:1.4, t:"atk", c:"#f87171", d:"Fast invisible slashing attack."}, {n:"TECHNIQUE RED", p:2.5, t:"recoil", c:"#ef4444", d:"Repels with massive force."}, {n:"TECHNIQUE BLUE", p:1.6, t:"vampire", c:"#3b82f6", d:"Attracts and crushes. Heals."}, {n:"HOLLOW PURPLE", p:3.5, t:"recoil", c:"#a855f7", d:"Erases matter entirely."}, {n:"STRAW DOLL", p:1.5, t:"atk", c:"#9333ea", d:"Strikes the soul via resonance."}, {n:"RATIO TECHNIQUE", p:2.0, t:"atk", c:"#0ea5e9", d:"Forcefully creates a weak point."}, {n:"DIVERGENT FIST", p:1.3, t:"atk", c:"#3b82f6", d:"Double impact physical blow."}, {n:"PIERCING BLOOD", p:1.7, t:"atk", c:"#b91c1c", d:"Supersonic blood beam."},
+        // DBZ
+        {n:"KAMEHAMEHA", p:1.8, t:"atk", c:"#60a5fa", d:"Concentrated energy wave."}, {n:"FINAL FLASH", p:2.5, t:"atk", c:"#fef08a", d:"Devastating golden blast."}, {n:"SPIRIT BOMB", p:3.8, t:"recoil", c:"#bae6fd", d:"Gathered energy. Massive recoil."}, {n:"DESTRUCTO DISC", p:2.1, t:"atk", c:"#fde047", d:"Sharp disc that cuts anything."}, {n:"KAIO-KEN", p:0, t:"buff", c:"#ef4444", d:"Multiplies stats greatly."}, {n:"SPECIAL BEAM", p:2.4, t:"atk", c:"#a3e635", d:"Piercing drill laser."}, {n:"MASENKO", p:1.5, t:"atk", c:"#facc15", d:"Quick overhead blast."}, {n:"GALICK GUN", p:1.7, t:"atk", c:"#c084fc", d:"Purple concentrated wave."}, {n:"DEATH BEAM", p:2.0, t:"atk", c:"#ef4444", d:"Lightning-fast finger laser."}, {n:"BIG BANG ATTACK", p:2.2, t:"atk", c:"#38bdf8", d:"Explosive sphere of energy."}, {n:"SUPERNOVA", p:3.2, t:"recoil", c:"#f97316", d:"Planet-destroying fiery sphere."}, {n:"DRAGON FIST", p:2.8, t:"atk", c:"#fef08a", d:"Golden dragon pierces the foe."}, {n:"MAKANKOSAPPO", p:2.5, t:"atk", c:"#4ade80", d:"Spiral piercing attack."}, {n:"HELLZONE GRENADE", p:1.9, t:"atk", c:"#c084fc", d:"Surrounding ki blasts."}, {n:"METEOR CRASH", p:1.6, t:"atk", c:"#9ca3af", d:"Relentless physical combo."},
+        // Naruto
+        {n:"RASENGAN", p:1.7, t:"atk", c:"#93c5fd", d:"Spinning chakra sphere."}, {n:"CHIDORI", p:2.1, t:"recoil", c:"#60a5fa", d:"Lightning blade. Causes recoil."}, {n:"AMATERASU", p:1.6, t:"vampire", c:"#111111", d:"Inextinguishable black flames."}, {n:"FIREBALL JUTSU", p:1.3, t:"atk", c:"#ef4444", d:"Giant sphere of fire."}, {n:"SAND COFFIN", p:1.5, t:"atk", c:"#d97706", d:"Crushes with immense pressure."}, {n:"TSUKUYOMI", p:2.0, t:"vampire", c:"#7f1d1d", d:"Mental torture. Heals user."}, {n:"SUSANOO SLASH", p:2.5, t:"atk", c:"#38bdf8", d:"Massive ethereal sword strike."}, {n:"GENTLE FIST", p:1.2, t:"buff", c:"#a7f3d0", d:"Strikes chakra points. Buffs user."}, {n:"FLYING RAIJIN", p:1.8, t:"atk", c:"#fef08a", d:"Instant teleportation strike."}, {n:"KIRIN", p:3.0, t:"recoil", c:"#60a5fa", d:"Massive lightning dragon."}, {n:"RASENSHURIKEN", p:2.7, t:"recoil", c:"#bfdbfe", d:"Cell-destroying wind blades."}, {n:"SHADOW CLONE", p:0, t:"buff", c:"#cbd5e1", d:"Multiplies actions. Buffs ATK."}, {n:"NIGHT GUY", p:4.5, t:"recoil", c:"#dc2626", d:"Bends space. Shatters user's leg."}, {n:"PLANETARY DEV", p:3.5, t:"atk", c:"#4b5563", d:"Creates a gravity well crushing all."}, {n:"WATER DRAGON", p:1.6, t:"atk", c:"#3b82f6", d:"Giant liquid serpent attack."},
+        // One Piece
+        {n:"GUM-GUM PISTOL", p:1.3, t:"atk", c:"#fca5a5", d:"Stretching kinetic punch."}, {n:"CONQUEROR HAKI", p:1.9, t:"atk", c:"#fef08a", d:"Overwhelms the weak-willed."}, {n:"DIVINE DEPARTURE", p:2.9, t:"atk", c:"#ef4444", d:"Legendary slash from Pirate King."}, {n:"ONIGIRI", p:1.7, t:"atk", c:"#4ade80", d:"Three-sword demon slash."}, {n:"ROOM SHAMBLES", p:1.5, t:"vampire", c:"#38bdf8", d:"Spatially dissects. Steals HP."}, {n:"FIRE FIST", p:2.0, t:"atk", c:"#f97316", d:"Massive pillar of flames."}, {n:"THUNDER BAGUA", p:2.5, t:"atk", c:"#60a5fa", d:"Lightning fast club strike."}, {n:"JET GATLING", p:2.2, t:"recoil", c:"#fca5a5", d:"Furious supersonic barrage."}, {n:"ICE AGE", p:1.8, t:"atk", c:"#bae6fd", d:"Freezes the surroundings."}, {n:"LIGHT SPEED KICK", p:2.1, t:"atk", c:"#fef08a", d:"Kick at the speed of light."}, {n:"MAGMA HOUND", p:2.3, t:"atk", c:"#b91c1c", d:"Incinerating molten fist."}, {n:"BLACK HOLE", p:2.6, t:"vampire", c:"#111827", d:"Gravity absorbs all. Drains HP."}, {n:"SLAVE ARROW", p:1.4, t:"buff", c:"#f472b6", d:"Petrifies enemy, buffs ATK."}, {n:"PUNK GIBSON", p:1.8, t:"atk", c:"#9ca3af", d:"Magnetic scrap metal crush."}, {n:"GALAXY IMPACT", p:3.5, t:"recoil", c:"#3b82f6", d:"Haki explosion that levels towns."},
+        // Bleach
+        {n:"GETSUGA TENSHO", p:1.9, t:"atk", c:"#38bdf8", d:"Massive crescent slash."}, {n:"MUGETSU", p:4.5, t:"recoil", c:"#000000", d:"Final Getsuga. Massive damage."}, {n:"SENBONZAKURA", p:1.6, t:"atk", c:"#f472b6", d:"Millions of tiny petal blades."}, {n:"CERO", p:1.5, t:"atk", c:"#ef4444", d:"Standard hollow energy blast."}, {n:"KUROHITSUGI", p:2.8, t:"atk", c:"#111827", d:"Black coffin of gravity."}, {n:"CERO OSCURAS", p:2.6, t:"atk", c:"#000000", d:"Black cero of immense power."}, {n:"GETSUGA JUJISHO", p:2.4, t:"atk", c:"#fef08a", d:"Cross-shaped energy slash."}, {n:"RYUJIN JAKKA", p:3.0, t:"recoil", c:"#ea580c", d:"Incinerates all creation."}, {n:"SOKATSUI", p:1.4, t:"atk", c:"#3b82f6", d:"Blue flame kido attack."}, {n:"GRAN REY CERO", p:2.9, t:"atk", c:"#38bdf8", d:"Distorts space with spiritual pressure."},
+        // MHA, DS, & Others
+        {n:"DETROIT SMASH", p:2.4, t:"recoil", c:"#10b981", d:"100% power! Breaks bones."}, {n:"PROMINENCE BURN", p:2.8, t:"atk", c:"#ef4444", d:"Ultimate hellfire blast."}, {n:"AP SHOT", p:1.6, t:"atk", c:"#f97316", d:"Armor piercing explosion."}, {n:"WATER WHEEL", p:1.4, t:"atk", c:"#3b82f6", d:"Spinning liquid slash."}, {n:"HINOKAMI KAGURA", p:2.5, t:"recoil", c:"#f97316", d:"Dance of Fire God. Burns user."}, {n:"THUNDER CLAP", p:2.1, t:"atk", c:"#fef08a", d:"Godspeed singular strike."}, {n:"DEAD CALM", p:0, t:"buff", c:"#38bdf8", d:"Nullifies attacks. Buffs ATK."}, {n:"RENGOKU", p:3.0, t:"recoil", c:"#ef4444", d:"Blazing esoteric art."}, {n:"JAJANKEN ROCK", p:2.6, t:"atk", c:"#f97316", d:"Massive concentrated aura punch."}, {n:"BUNGEE GUM", p:1.3, t:"vampire", c:"#ec4899", d:"Rubber and gum properties."}, {n:"SERIOUS PUNCH", p:4.0, t:"recoil", c:"#7f1d1d", d:"Earth splits. Massive recoil."}, {n:"ORA ORA RUSH", p:2.0, t:"atk", c:"#a855f7", d:"Furious stand punch barrage."}, {n:"TIME STOP", p:0, t:"buff", c:"#ffffff", d:"ZA WARUDO! Free ATK boost."}, {n:"DIMENSION SLASH", p:2.7, t:"atk", c:"#4b5563", d:"Cuts through space itself."}, {n:"STARBURST STREAM", p:2.2, t:"atk", c:"#38bdf8", d:"16-hit dual wield combo."}
+    ];
+
+    const ITEMS_DB = [
+        { id: "pot", name: "MINOR POTION", type: "heal_50", price: 50, desc: "Restores 50% HP." },
+        { id: "senzu", name: "SENZU BEAN", type: "heal_full", price: 150, desc: "Restores 100% HP." },
+        { id: "shield", name: "INFINITY SHIELD", type: "invuln", price: 200, desc: "Take 0 DMG for 1 turn." },
+        { id: "elixir", name: "DOMAIN ELIXIR", type: "domain", price: 100, desc: "Fully restores Domain Meter." }
+    ];
+
+    // --- ENGINE SETUP ---
     const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
     const sCanvas = document.getElementById('shatterCanvas'); const sCtx = sCanvas.getContext('2d');
     
-    // Engine State
-    let gameState = "START"; 
-    let currentFloor = 1;
-    let textQueue = []; let onQueueEmpty = null;
-    let isTyping = false; let currentText = ""; let typedText = ""; let textCharIndex = 0; let typeSpeed = 2; 
-    let frameCount = 0;
-    let animState = null; let animTimer = 0; let animData = {}; 
-    let particles = []; let glassShards = []; let shockwaves = [];
-    let activeDomain = null; 
-    let clashValue = 50; let clashActive = false; let clashTimer = 0;
+    let gameState = "START", currentFloor = 1, diffMult = 1.0;
+    let textQueue = [], onQueueEmpty = null, isTyping = false, currentText = "", typedText = "", textCharIndex = 0, frameCount = 0;
+    let animState = null, animTimer = 0, animData = {}; 
+    let particles = [], glassShards = [], shockwaves = [];
+    let activeDomain = null, clashValue = 50, clashActive = false, clashTimer = 0;
 
-    // Sprites
     const colors = { '0':null, '1':'#000', '2':'#fff', '3':'#ef4444', '4':'#3b82f6', '5':'#22c55e', '6':'#eab308', '7':'#fcd34d', '8':'#94a3b8', '9':'#a855f7', 'A':'#f97316', 'B':'#78350f', 'C':'#06b6d4', 'D':'#f43f5e' };
     const spr_base = ["0000011110000000", "0000122221000000", "0001222222100000", "0012222222210000", "0017777777710000", "0017777777710000", "0001222222100000", "0001122221100000", "0012222222210000", "0122222222221000", "0121222222121000", "0110111111011000", "0000110011000000", "0000110011000000", "0001110011100000", "0000000000000000"];
     const spr_awaken = ["0000222222000000", "0002666666200000", "0026666666620000", "0266666666662000", "0267777777762000", "0267676676762000", "0026666666620000", "0021111111120000", "0211111111112000", "2111111111111200", "2111111111111200", "2110111111011200", "0000110011000000", "0000110011000000", "0001110011100000", "0000000000000000"];
+    const spr_sans = ["0000000000000000","0000022222000000","0000222222200000","0002212221220000","0002222222220000","0000221112200000","0000222222200000","0000011211000000","0000222222200000","0002222222220000","0001112221110000","0000001110000000","0000011011000000","0000011011000000","0000111011100000","0000000000000000"];
     const spr_enemies = [
         ["0000011110000000", "0000199991000000", "0001999999100000", "0001719917100000", "0001721127100000", "0001799997100000", "0000111111000000", "0001133331100000", "0011133331110000", "0110133331011000", "0000111111000000", "0000110011000000", "0000110011000000", "0001110011100000", "0000000000000000", "0000000000000000"],
         ["0000011110000000", "0001A3333A100000", "0013333333310000", "0017711117710000", "0017721127710000", "0017771177710000", "00011AAAA1100000", "0001A1AA1A100000", "001AA1AA1AA10000", "00101AAAA1010000", "000011AA11000000", "0000110011000000", "0000110011000000", "0001110011100000", "0000000000000000", "0000000000000000"]
@@ -310,393 +270,201 @@
     let pOff = { x: 0, y: 0 }; let eOff = { x: 0, y: 0 };
     let eFlash = false, pFlash = false, eVis = true, pVis = true;
 
-    // --- ENEMY GENERATOR ---
-    function generateEnemy(floor) {
-        const prefixes = ["ROGUE", "CURSED", "ELITE", "CORRUPTED", "DEMON", "SHADOW", "COSMIC", "FALLEN", "AWAKENED", "HAKAI"];
-        const archetypes = ["SHINOBI", "SPIRIT", "SAIYAN", "PIRATE", "HOLLOW", "STAND USER", "HASHIRA", "VILLAIN", "ESPER", "DRAGON"];
-        let name = prefixes[Math.floor(Math.random()*prefixes.length)] + " " + archetypes[Math.floor(Math.random()*archetypes.length)];
-        
-        let hpScale = 80 + (floor * 50); let atkScale = 15 + (floor * 10);
-        let isBoss = (floor % 5 === 0);
-        if (isBoss) { name = "BOSS: " + name; hpScale *= 1.8; atkScale *= 1.3; }
+    // --- GAME LOGIC ---
+    window.updateDiff = function() { diffMult = parseFloat(document.getElementById('diff-slider').value); let lbl = "NORMAL"; if(diffMult==0.5) lbl="EASY"; if(diffMult==1.5) lbl="HARD"; if(diffMult==2.0) lbl="EXTREME"; document.getElementById('diff-label').innerText = lbl; }
 
-        let pColor = ['#ef4444', '#3b82f6', '#10b981', '#a855f7', '#f59e0b', '#ec4899', '#ffffff'][Math.floor(Math.random()*7)];
-        
-        return {
-            name: name, level: floor, maxHp: Math.floor(hpScale), hp: Math.floor(hpScale), atk: Math.floor(atkScale),
-            sprite: spr_enemies[Math.floor(Math.random() * spr_enemies.length)], color: pColor, 
-            eMove: ["SLICING WAVE", "ENERGY BLAST", "BRUTAL STRIKE", "DARK ORB", "METEOR CRASH"][Math.floor(Math.random()*5)],
-            intro: `Floor ${floor} Guardian appears!`,
-            domain: (isBoss || Math.random() < (floor * 0.05)) ? { name: "MALEVOLENT SHRINE", color1: "#450a0a", color2: "#000" } : null,
-            ultimate: { name: "DEATH BLOW", used: false }
-        };
-    }
-
-    // --- RENDERING & CRAZY EFFECTS ---
-    function triggerScreenShatter() {
-        // Flashbang
-        let flash = document.getElementById('flash-overlay');
-        flash.classList.remove('super-flash');
-        void flash.offsetWidth; // trigger reflow
-        flash.classList.add('super-flash');
-
-        // Intense Shake & Inversion
-        let wrapper = document.getElementById('game-wrapper');
-        wrapper.classList.add('shatter-shake');
-        setTimeout(() => wrapper.classList.remove('shatter-shake'), 1200);
-
-        // Exploding Shards
-        glassShards = [];
-        let cx = 450; let cy = 300; 
-        for(let i=0; i<80; i++) { // Double shards
-            let angle = Math.random() * Math.PI * 2;
-            let speed = 10 + Math.random() * 30; // Faster
-            let points = []; let numPts = 3 + Math.floor(Math.random()*5);
-            for(let p=0; p<numPts; p++) points.push({ x: (Math.random()-0.5)*120, y: (Math.random()-0.5)*120 });
-            glassShards.push({
-                x: cx + (Math.random()-0.5)*50, y: cy + (Math.random()-0.5)*50,
-                vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed,
-                rot: Math.random()*Math.PI*2, vrot: (Math.random()-0.5)*1.5,
-                points: points, life: 80
-            });
-        }
-    }
-
-    function emitParticles(x, y, color, count, speed=2, life=30) {
-        for(let i=0; i<count; i++) particles.push({ x, y, vx: (Math.random()-0.5)*speed*2, vy: (Math.random()-0.5)*speed*2, color, life: life + Math.random()*15, maxLife: life });
-    }
-    function createShockwave(x, y, color, speed=5, width=3) {
-        shockwaves.push({ x, y, radius: 1, maxRadius: 200, color, speed, width, life: 1.0 });
-    }
-
-    function updateParticles() {
-        for(let i = particles.length-1; i>=0; i--) {
-            let p = particles[i]; p.x += p.vx; p.y += p.vy; p.life--;
-            if (p.life <= 0) particles.splice(i, 1);
-        }
-        for(let i = shockwaves.length-1; i>=0; i--) {
-            let s = shockwaves[i]; s.radius += s.speed; s.life -= 0.05;
-            if (s.life <= 0 || s.radius >= s.maxRadius) shockwaves.splice(i, 1);
-        }
-    }
-
-    function darkenColor(hex, factor) {
-        if(!hex || hex === 'none') return '#000';
-        let r = parseInt(hex.slice(1,3), 16) * factor; let g = parseInt(hex.slice(3,5), 16) * factor; let b = parseInt(hex.slice(5,7), 16) * factor;
-        return `rgb(${Math.floor(r)},${Math.floor(g)},${Math.floor(b)})`;
-    }
-
-    function drawSprite(arr, x, y, scale=4, flash=false, isTransformed=false, overrideColor=null) {
-        if (!arr) return;
-        ctx.fillStyle = 'rgba(0,0,0,0.4)';
-        for(let r=0; r<16; r++) for(let c=0; c<16; c++) if(arr[r][c] !== '0') ctx.fillRect(x + c*scale + scale, y + r*scale + scale*2, scale, scale);
-        
-        if (isTransformed) { ctx.shadowColor = '#eab308'; ctx.shadowBlur = 15; }
-        for (let r=0; r<16; r++) {
-            for (let c=0; c<16; c++) {
-                let ch = arr[r][c];
-                if (ch !== '0') {
-                    let fill = flash ? '#ffffff' : colors[ch];
-                    if (ch === '2' && overrideColor) fill = overrideColor; // Color base skin/clothes
-                    if (!flash && r > 9 && ch !== '1') fill = darkenColor(fill, 0.6);
-                    ctx.fillStyle = fill; ctx.fillRect(x + c*scale, y + r*scale, scale, scale);
-                }
-            }
-        }
-        ctx.shadowBlur = 0;
-    }
-
-    function renderGame() {
-        ctx.clearRect(0, 0, 240, 160);
-        let camX = 0, camY = 0;
-        if (animState === "SHAKE") { camX = (Math.random() - 0.5) * 12; camY = (Math.random() - 0.5) * 12; }
-        ctx.save(); ctx.translate(camX, camY);
-
-        // BG
-        if (activeDomain) {
-            let grad = ctx.createRadialGradient(120, 80, 10, 120, 80, 150 + Math.sin(frameCount*0.05)*20);
-            grad.addColorStop(0, activeDomain.color1); grad.addColorStop(1, activeDomain.color2);
-            ctx.fillStyle = grad; ctx.fillRect(0,0,240,160);
-            if (frameCount%3===0) emitParticles(Math.random()*240, 160, '#ffffff', 2, 0.8, 60);
-        } else {
-            let skyGrad = ctx.createLinearGradient(0,0,0,100);
-            skyGrad.addColorStop(0, '#1e1b4b'); skyGrad.addColorStop(1, '#4c1d95'); // Night sky vibe
-            ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, 240, 100);
-            let floorGrad = ctx.createLinearGradient(0,100,0,160);
-            floorGrad.addColorStop(0, '#312e81'); floorGrad.addColorStop(1, '#1e1b4b');
-            ctx.fillStyle = floorGrad; ctx.fillRect(0, 100, 240, 60);
-            ctx.fillStyle = 'rgba(0,0,0,0.4)';
-            ctx.beginPath(); ctx.ellipse(180, 75, 45, 12, 0, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.ellipse(60, 145, 50, 15, 0, 0, Math.PI*2); ctx.fill();
-        }
-
-        // Sprites
-        if (eVis && currentEnemy) drawSprite(currentEnemy.sprite, ePos.x + eOff.x, ePos.y + eOff.y, 4, eFlash, false, currentEnemy.color);
-        let pSprite = player.transformed ? spr_awaken : spr_base;
-        if (pVis) drawSprite(pSprite, pPos.x + pOff.x, pPos.y + pOff.y, 4, pFlash, player.transformed, player.color);
-
-        // Shockwaves
-        shockwaves.forEach(s => {
-            ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, Math.PI*2);
-            ctx.strokeStyle = `rgba(${parseInt(s.color.slice(1,3),16)},${parseInt(s.color.slice(3,5),16)},${parseInt(s.color.slice(5,7),16)},${s.life})`;
-            ctx.lineWidth = s.width; ctx.stroke();
-        });
-
-        // Particles
-        particles.forEach(p => { ctx.fillStyle = p.color; let size = Math.max(1, (p.life/p.maxLife) * 4); ctx.fillRect(p.x, p.y, size, size); });
-
-        // Anim Specific Drawing
-        if (animState === "BEAM") {
-            ctx.fillStyle = animData.color; ctx.fillRect(animData.x, animData.y, animData.w, animData.h);
-            ctx.fillStyle = '#fff'; ctx.fillRect(animData.x, animData.y + animData.h/4, animData.w, animData.h/2);
-            emitParticles(animData.x + (animData.w > 0 ? animData.w : 0), animData.y + animData.h/2, animData.color, 5, 8, 20);
-        } else if (animState === "SLASH") {
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = animData.w;
-            ctx.beginPath(); ctx.moveTo(animData.x1, animData.y1); ctx.lineTo(animData.x2, animData.y2); ctx.stroke();
-            ctx.strokeStyle = animData.color; ctx.lineWidth = animData.w/2;
-            ctx.beginPath(); ctx.moveTo(animData.x1, animData.y1); ctx.lineTo(animData.x2, animData.y2); ctx.stroke();
-        } else if (animState === "GLITCH") {
-            for(let i=0; i<10; i++) {
-                ctx.fillStyle = ['#f00', '#0f0', '#00f', '#fff'][Math.floor(Math.random()*4)];
-                ctx.fillRect(Math.random()*240, Math.random()*160, Math.random()*40, Math.random()*10);
-            }
-        }
-
-        ctx.restore();
-
-        // Shatter Canvas Rendering
-        sCtx.clearRect(0,0,900,600);
-        if (glassShards.length > 0) {
-            for(let i = glassShards.length-1; i>=0; i--) {
-                let s = glassShards[i];
-                s.x += s.vx; s.y += s.vy; s.rot += s.vrot; s.life--;
-                
-                sCtx.save(); sCtx.translate(s.x, s.y); sCtx.rotate(s.rot);
-                sCtx.beginPath(); sCtx.moveTo(s.points[0].x, s.points[0].y);
-                for(let j=1; j<s.points.length; j++) sCtx.lineTo(s.points[j].x, s.points[j].y);
-                sCtx.closePath();
-                
-                sCtx.fillStyle = `rgba(255, 255, 255, ${s.life/80})`; sCtx.fill(); 
-                sCtx.strokeStyle = `rgba(100, 200, 255, ${(s.life/80)*0.8})`; sCtx.lineWidth = 3; sCtx.stroke();
-                sCtx.restore();
-
-                if (s.life <= 0) glassShards.splice(i, 1);
-            }
-        }
-    }
-
-    // --- UI LOGIC ---
-    window.initCharacterAndStart = function() {
-        // Pick Random Character
+    window.initGame = function() {
         let randChar = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
+        let transform = TRANSFORMATIONS[Math.floor(Math.random() * TRANSFORMATIONS.length)];
         player = {
-            name: randChar.name, level: 1, 
-            maxHp: randChar.maxHp, hp: randChar.maxHp, 
-            atk: randChar.atk, color: randChar.color,
+            name: randChar.name, level: 1, maxHp: randChar.maxHp, hp: randChar.maxHp, atk: randChar.atk, color: randChar.color, money: 0,
             ultName: randChar.ultName, ultType: randChar.ultType, ultMsg: randChar.msg,
-            domainMeter: 0, vulnerable: false, transformed: false,
+            domainMeter: 0, vulnerable: false, transformed: false, invulnTurns: 0,
+            transformData: transform,
             domain: { name: "INFINITE VOID", color1: "#000000", color2: randChar.color },
-            moves: [
-                { name: "BASIC STRIKE", power: 1.0, type: "atk", color: "#9ca3af", desc: "A standard physical strike." },
-                { name: "KI BLAST", power: 1.4, type: "atk", color: "#60a5fa", desc: "A basic energy shot." }
-            ]
+            moves: [ALL_ATTACKS[0], ALL_ATTACKS[1]],
+            items: [{...ITEMS_DB[0], count: 2}]
         };
 
-        document.getElementById('p-name').innerText = player.name;
-        document.getElementById('p-name').style.color = player.color;
-        
-        document.getElementById('start-screen').classList.add('hidden');
-        document.getElementById('battle-ui').classList.remove('hidden');
-        document.getElementById('floor-indicator').classList.remove('hidden');
+        document.getElementById('p-name').innerText = player.name; document.getElementById('p-name').style.color = player.color;
+        document.getElementById('start-screen').classList.add('hidden'); document.getElementById('battle-ui').classList.remove('hidden'); document.getElementById('top-bar').classList.remove('hidden');
         startEncounter();
+    }
+
+    function generateEnemy(floor) {
+        if (floor === 100) return { name: "SANS", level: 100, maxHp: 9999, hp: 9999, atk: Math.floor(150 * diffMult), sprite: spr_sans, color: "#ffffff", eMove: "GASTER BLASTER", intro: "do you wanna have a bad time?", domain: null, ultimate: { name: "BONE ZONE", used: false }, isSans: true };
+        
+        let isBoss = (floor % 10 === 0);
+        let name = (isBoss ? "BOSS: " : "") + ["ROGUE","CURSED","ELITE","CORRUPTED","DEMON"][Math.floor(Math.random()*5)] + " " + ["SHINOBI","SPIRIT","SAIYAN","PIRATE","HOLLOW"][Math.floor(Math.random()*5)];
+        let hpScale = (80 + (floor * 50)) * diffMult * (isBoss ? 2.5 : 1);
+        let atkScale = (15 + (floor * 10)) * diffMult * (isBoss ? 1.5 : 1);
+        let pColor = ['#ef4444', '#3b82f6', '#10b981', '#a855f7', '#f59e0b', '#ec4899'][Math.floor(Math.random()*6)];
+        
+        return { name: name, level: floor, maxHp: Math.floor(hpScale), hp: Math.floor(hpScale), atk: Math.floor(atkScale), sprite: spr_enemies[Math.floor(Math.random() * spr_enemies.length)], color: pColor, eMove: ["SLICING WAVE", "ENERGY BLAST", "BRUTAL STRIKE", "DARK ORB"][Math.floor(Math.random()*4)], intro: `Floor ${floor} Guardian appears!`, domain: (isBoss || Math.random() < 0.1) ? { name: "MALEVOLENT SHRINE", color1: "#450a0a", color2: "#000" } : null, ultimate: { name: "DEATH BLOW", used: false } };
     }
 
     function updateHUD() {
         if(!currentEnemy) return;
-        document.getElementById('floor-num').innerText = currentFloor;
-        document.getElementById('e-name').innerText = currentEnemy.name;
-        document.getElementById('e-lv').innerText = `Lv${currentEnemy.level}`;
+        document.getElementById('floor-num').innerText = currentFloor; document.getElementById('p-money').innerText = player.money;
+        document.getElementById('e-name').innerText = currentEnemy.name; document.getElementById('e-lv').innerText = `Lv${currentEnemy.level}`;
         document.getElementById('e-hp-bar').style.width = Math.max(0, (currentEnemy.hp / currentEnemy.maxHp) * 100) + '%';
         
-        document.getElementById('p-lv').innerText = `Lv${player.level}`;
-        document.getElementById('p-hp-text').innerText = `${Math.floor(player.hp)}/${player.maxHp}`;
+        document.getElementById('p-lv').innerText = `Lv${player.level}`; document.getElementById('p-hp-text').innerText = `${Math.floor(player.hp)}/${player.maxHp}`;
         document.getElementById('p-hp-bar').style.width = Math.max(0, (player.hp / player.maxHp) * 100) + '%';
+        document.getElementById('p-domain-bar').style.width = (player.domainMeter / 5) * 100 + '%';
 
-        let dBar = document.getElementById('p-domain-bar'); dBar.style.width = (player.domainMeter / 5) * 100 + '%';
-        let btnDomain = document.getElementById('btn-domain');
-        if (player.domainMeter >= 5) { btnDomain.disabled = false; btnDomain.innerText = "DOMAIN!"; btnDomain.classList.add('btn-highlight'); } 
-        else { btnDomain.disabled = true; btnDomain.innerText = `DOM (${player.domainMeter}/5)`; btnDomain.classList.remove('btn-highlight'); }
+        let btnDom = document.getElementById('btn-domain');
+        btnDom.disabled = (player.domainMeter < 5); btnDom.innerText = btnDom.disabled ? `DOM (${player.domainMeter}/5)` : "DOMAIN!";
+        if(!btnDom.disabled) btnDom.classList.add('btn-highlight'); else btnDom.classList.remove('btn-highlight');
 
-        let ultBtn = document.getElementById('btn-ultimate'); let healBtn = document.getElementById('btn-heal');
-        if (player.hp <= player.maxHp * 0.5) { 
-            ultBtn.disabled = false; ultBtn.innerText = "ULTIMATE"; 
-            if(!player.transformed) { healBtn.innerText = "AWAKEN"; healBtn.style.color = "#ef4444"; healBtn.classList.add('btn-highlight'); }
-        } else { 
-            ultBtn.disabled = true; ultBtn.innerText = "ULT(50%)"; 
-            if(!player.transformed) { healBtn.innerText = "HEAL"; healBtn.style.color = ""; healBtn.classList.remove('btn-highlight'); }
-        }
+        let btnUlt = document.getElementById('btn-ultimate'); let btnAwk = document.getElementById('btn-awaken');
+        btnUlt.disabled = (player.hp > player.maxHp * 0.5); btnUlt.innerText = btnUlt.disabled ? "ULT(50%)" : "ULTIMATE";
+        btnAwk.disabled = (player.hp > player.maxHp * 0.5 || player.transformed); btnAwk.innerText = btnAwk.disabled ? "AWK(50%)" : "AWAKEN";
+        if(!btnAwk.disabled) btnAwk.classList.add('btn-highlight'); else btnAwk.classList.remove('btn-highlight');
 
         let pHud = document.getElementById('player-hud');
-        if (player.vulnerable) { pHud.classList.add('vulnerable-shake'); document.getElementById('p-hp-text').innerText += " (VULN!)"; } 
-        else pHud.classList.remove('vulnerable-shake');
+        let status = []; if(player.vulnerable) { pHud.classList.add('vulnerable-shake'); status.push("VULNERABLE"); } else pHud.classList.remove('vulnerable-shake');
+        if(player.invulnTurns > 0) status.push("INVULNERABLE");
+        if(currentEnemy.isSans) document.getElementById('e-name').style.color = "#3b82f6";
+        document.getElementById('p-status').innerText = status.join(" | ");
     }
 
     function queueText(text) { textQueue.push(text); }
     function processTextQueue() {
         if (textQueue.length > 0) {
             gameState = "TEXT"; currentText = textQueue.shift(); typedText = ""; textCharIndex = 0; isTyping = true;
-            document.getElementById('dialogue-box').classList.remove('hidden');
-            document.getElementById('action-menu').classList.add('hidden');
-            document.getElementById('moves-menu').classList.add('hidden');
-            document.getElementById('dialogue-arrow').classList.add('hidden');
+            document.getElementById('dialogue-box').classList.remove('hidden'); document.getElementById('action-menu').classList.add('hidden'); document.getElementById('moves-menu').classList.add('hidden'); document.getElementById('items-menu').classList.add('hidden'); document.getElementById('dialogue-arrow').classList.add('hidden');
         } else {
-            if (onQueueEmpty) { let cb = onQueueEmpty; onQueueEmpty = null; cb(); } 
-            else showActionMenu();
+            if (onQueueEmpty) { let cb = onQueueEmpty; onQueueEmpty = null; cb(); } else showActionMenu();
         }
     }
 
     window.advanceText = function() {
         if (gameState !== "TEXT" && gameState !== "INTRO") return;
-        if (isTyping) {
-            typedText = currentText; document.getElementById('dialogue-text').innerText = typedText;
-            isTyping = false; textCharIndex = currentText.length; document.getElementById('dialogue-arrow').classList.remove('hidden');
-        } else {
-            if (gameState === "INTRO") { gameState = "BATTLE_WAIT"; queueText(`FIGHT!`); processTextQueue(); } 
-            else processTextQueue();
-        }
+        if (isTyping) { typedText = currentText; document.getElementById('dialogue-text').innerText = typedText; isTyping = false; textCharIndex = currentText.length; document.getElementById('dialogue-arrow').classList.remove('hidden'); } 
+        else { if (gameState === "INTRO") { gameState = "BATTLE_WAIT"; queueText(`FIGHT!`); processTextQueue(); } else processTextQueue(); }
     };
 
     function showActionMenu() {
-        gameState = "MENU";
-        document.getElementById('dialogue-text').innerText = `What will\n${player.name} do?`;
-        document.getElementById('dialogue-arrow').classList.add('hidden');
-        document.getElementById('action-menu').classList.remove('hidden');
-        document.getElementById('moves-menu').classList.add('hidden');
-        updateHUD();
+        gameState = "MENU"; document.getElementById('dialogue-text').innerText = `What will\n${player.name} do?`; document.getElementById('dialogue-arrow').classList.add('hidden');
+        document.getElementById('action-menu').classList.remove('hidden'); document.getElementById('moves-menu').classList.add('hidden'); document.getElementById('items-menu').classList.add('hidden'); updateHUD();
     }
 
-    window.openMoves = function() {
+    window.openMenu = function(type) {
         document.getElementById('action-menu').classList.add('hidden');
-        let movesMenu = document.getElementById('moves-menu'); movesMenu.innerHTML = '';
-        player.moves.forEach((m, i) => {
-            let btn = document.createElement('button'); btn.className = 'menu-btn';
-            btn.innerHTML = `${m.name}`; btn.style.color = m.color;
-            btn.onclick = () => useMove(i); movesMenu.appendChild(btn);
-        });
-        let backBtn = document.createElement('button'); backBtn.className = 'menu-btn'; 
-        if(player.moves.length % 2 !== 0) backBtn.style.gridColumn = 'span 2'; 
-        backBtn.innerText = 'BACK'; backBtn.onclick = () => { movesMenu.classList.add('hidden'); document.getElementById('action-menu').classList.remove('hidden'); };
-        movesMenu.appendChild(backBtn); movesMenu.classList.remove('hidden');
+        let menu = document.getElementById(type + '-menu'); menu.innerHTML = '';
+        if(type === 'moves') {
+            player.moves.forEach((m, i) => { let btn = document.createElement('button'); btn.className = 'menu-btn'; btn.innerHTML = m.n; btn.style.color = m.c; btn.onclick = () => useMove(i); menu.appendChild(btn); });
+        } else {
+            player.items.forEach((it, i) => { let btn = document.createElement('button'); btn.className = 'menu-btn'; btn.innerHTML = `${it.name} (x${it.count})`; btn.onclick = () => useItem(i); menu.appendChild(btn); });
+            if(player.items.length === 0) menu.innerHTML = `<div style="grid-column: span 2; text-align:center;">NO ITEMS</div>`;
+        }
+        let backBtn = document.createElement('button'); backBtn.className = 'menu-btn'; backBtn.style.gridColumn = 'span 2'; backBtn.innerText = 'BACK'; backBtn.onclick = () => { menu.classList.add('hidden'); document.getElementById('action-menu').classList.remove('hidden'); };
+        menu.appendChild(backBtn); menu.classList.remove('hidden');
     }
 
-    // --- BATTLE LOGIC ---
     function startEncounter() {
-        currentEnemy = generateEnemy(currentFloor);
-        activeDomain = null; eVis = true; pVis = true; eOff = {x:0, y:0}; pOff = {x:0, y:0};
-        updateHUD();
-        gameState = "INTRO"; currentText = currentEnemy.intro;
-        typedText = ""; textCharIndex = 0; isTyping = true;
-        document.getElementById('dialogue-box').classList.remove('hidden');
-        document.getElementById('action-menu').classList.add('hidden');
-        document.getElementById('moves-menu').classList.add('hidden');
+        currentEnemy = generateEnemy(currentFloor); activeDomain = null; eVis = true; pVis = true; eOff = {x:0, y:0}; pOff = {x:0, y:0};
+        updateHUD(); gameState = "INTRO"; currentText = currentEnemy.intro; typedText = ""; textCharIndex = 0; isTyping = true;
+        document.getElementById('dialogue-box').classList.remove('hidden'); document.getElementById('action-menu').classList.add('hidden');
     }
 
     window.handleAction = function(act) {
         if (gameState !== "MENU") return;
         document.getElementById('action-menu').classList.add('hidden');
         
-        if (act === 'heal') {
+        if (act === 'awaken') {
             if (player.hp <= player.maxHp * 0.5 && !player.transformed) {
                 document.getElementById('game-wrapper').classList.add('glitch-effect'); setTimeout(() => document.getElementById('game-wrapper').classList.remove('glitch-effect'), 1000);
-                document.body.className = 'transformed-ui'; player.transformed = true; player.atk = Math.floor(player.atk * 1.5);
+                document.body.className = 'transformed-ui'; player.transformed = true; 
+                player.atk = Math.floor(player.atk * player.transformData.mult); player.hp = player.maxHp;
                 triggerScreenShatter();
-                playAnim('PLAYER_HEAL', () => { player.hp = player.maxHp; updateHUD(); queueText(`${player.name} AWAKENED! Stats drastically boosted!`); endPlayerTurn(); }, player.color);
-            } else {
-                queueText(`${player.name} used PLOT ARMOR!`);
-                onQueueEmpty = () => { playAnim('PLAYER_HEAL', () => { player.hp = Math.min(player.maxHp, player.hp + player.maxHp*0.4); updateHUD(); queueText(`Recovered HP!`); endPlayerTurn(); }, '#22c55e'); };
-                processTextQueue();
+                playAnim('PLAYER_HEAL', () => { updateHUD(); queueText(`AWAKENED: ${player.transformData.name}!\n${player.transformData.msg}`); endPlayerTurn(); }, player.transformData.color);
             }
         } 
         else if (act === 'domain') {
             document.getElementById('game-wrapper').classList.add('glitch-effect'); setTimeout(() => document.getElementById('game-wrapper').classList.remove('glitch-effect'), 500);
             triggerCutscene(`${player.name}:\nDOMAIN EXPANSION!\n${player.domain.name}`, () => {
                 activeDomain = { owner: 'player', color1: player.domain.color1, color2: player.domain.color2, turnsLeft: 3 }; player.domainMeter = 0; document.body.className = 'domain-ui';
-                createShockwave(120, 80, player.color, 15, 10);
-                queueText(`The battlefield shifted! You get 3 TURNS of massive damage!`); endPlayerTurn();
+                createShockwave(120, 80, player.color, 15, 10); queueText(`The battlefield shifted! Guaranteed hits & huge DMG!`); endPlayerTurn();
             });
         } 
         else if (act === 'ultimate') {
-            if (player.hp > player.maxHp * 0.5) return;
             document.getElementById('game-wrapper').classList.add('glitch-effect'); setTimeout(() => document.getElementById('game-wrapper').classList.remove('glitch-effect'), 400);
             triggerCutscene(`ULTIMATE:\n${player.ultName}!`, () => {
                 queueText(player.ultMsg);
                 onQueueEmpty = () => {
-                    if (currentEnemy.hp <= currentEnemy.maxHp * 0.5 && !currentEnemy.ultimate.used) {
+                    if (currentEnemy.hp <= currentEnemy.maxHp * 0.5 && !currentEnemy.ultimate.used && !currentEnemy.isSans) {
                         currentEnemy.ultimate.used = true; triggerCutscene(`ENEMY COUNTERS:\n${currentEnemy.ultimate.name}!`, startClash);
                     } else {
                         playAnim('PLAYER_ULTIMATE', () => {
-                            triggerScreenShatter();
-                            let dmg = getDamage(player.atk, 5.0, 'player'); currentEnemy.hp = Math.max(0, currentEnemy.hp - dmg); updateHUD();
+                            triggerScreenShatter(); let dmg = getDamage(player.atk, 5.0, 'player', true); currentEnemy.hp = Math.max(0, currentEnemy.hp - dmg); updateHUD();
                             queueText(`Devastating Hit! ${dmg} DMG!`); endPlayerTurn();
                         });
                     }
-                };
-                processTextQueue();
+                }; processTextQueue();
             });
         }
     }
 
     window.useMove = function(idx) {
-        let m = player.moves[idx];
-        document.getElementById('action-menu').classList.add('hidden'); document.getElementById('moves-menu').classList.add('hidden');
-        queueText(`${player.name} used ${m.name}!`);
-
+        let m = player.moves[idx]; document.getElementById('moves-menu').classList.add('hidden'); queueText(`${player.name} used ${m.n}!`);
         onQueueEmpty = () => {
             playAnim('PLAYER_ATTACK', () => {
-                if(m.type === 'buff') {
-                    player.atk += Math.floor(player.atk * 0.25); queueText(`ATK sharply rose!`);
-                } else if(m.type === 'heal_full') {
-                    player.hp = player.maxHp; queueText(`HP fully restored!`);
-                } else {
-                    let dmg = getDamage(player.atk, m.power, 'player');
-                    currentEnemy.hp = Math.max(0, currentEnemy.hp - dmg); queueText(`Dealt ${dmg} damage!`);
-                    if (m.type === 'recoil') { let r = Math.floor(dmg * 0.2); player.hp = Math.max(0, player.hp - r); queueText(`Hit with recoil damage!`); }
-                    if (m.type === 'vampire') { let v = Math.floor(dmg * 0.4); player.hp = Math.min(player.maxHp, player.hp + v); queueText(`Drained ${v} HP!`); }
+                if(m.t === 'buff') { player.atk += Math.floor(player.atk * 0.25); queueText(`ATK sharply rose!`); } 
+                else {
+                    let dmg = getDamage(player.atk, m.p, 'player');
+                    if (dmg === 0 && currentEnemy.isSans) queueText(`SANS dodged it!`);
+                    else {
+                        currentEnemy.hp = Math.max(0, currentEnemy.hp - dmg); queueText(`Dealt ${dmg} damage!`);
+                        if (m.t === 'recoil') { let r = Math.floor(dmg * 0.2); player.hp = Math.max(0, player.hp - r); queueText(`Hit with recoil!`); }
+                        if (m.t === 'vampire') { let v = Math.floor(dmg * 0.4); player.hp = Math.min(player.maxHp, player.hp + v); queueText(`Drained ${v} HP!`); }
+                    }
                 }
                 updateHUD(); endPlayerTurn();
-            }, m.color);
-        };
-        processTextQueue();
+            }, m.c);
+        }; processTextQueue();
     }
 
-    function getDamage(base, mult, attacker) {
+    window.useItem = function(idx) {
+        let it = player.items[idx]; document.getElementById('items-menu').classList.add('hidden');
+        it.count--; if(it.count <= 0) player.items.splice(idx, 1);
+        queueText(`Used ${it.name}!`);
+        onQueueEmpty = () => {
+            if(it.type === 'heal_50') player.hp = Math.min(player.maxHp, player.hp + player.maxHp*0.5);
+            if(it.type === 'heal_full') player.hp = player.maxHp;
+            if(it.type === 'invuln') player.invulnTurns = 1;
+            if(it.type === 'domain') player.domainMeter = 5;
+            updateHUD(); endPlayerTurn();
+        }; processTextQueue();
+    }
+
+    function getDamage(base, mult, attacker, forceHit=false) {
+        if(attacker === 'enemy' && player.invulnTurns > 0) return 0;
+        if(attacker === 'player' && currentEnemy.isSans && !forceHit && !(activeDomain && activeDomain.owner === 'player')) return 0; // Sans dodges
         let d = Math.floor(base * mult * (0.85 + Math.random()*0.3));
         if (activeDomain && activeDomain.owner === attacker) d = Math.floor(d * 1.5);
         if (attacker === 'enemy' && player.vulnerable) d = Math.floor(d * 2.0);
         if (attacker === 'player' && player.vulnerable) d = Math.floor(d * 0.5);
-        return d;
+        return Math.max(1, d);
     }
 
     function endPlayerTurn() {
         onQueueEmpty = () => {
             if (currentEnemy.hp <= 0) { handleVictory(); return; }
             if (player.hp <= 0) { handleDefeat(); return; }
-            player.vulnerable = false; 
+            player.vulnerable = false; if(player.invulnTurns > 0) player.invulnTurns--;
 
             if (activeDomain && activeDomain.owner === 'player') {
                 activeDomain.turnsLeft--;
-                if (activeDomain.turnsLeft > 0) {
-                    queueText(`DOMAIN ACTIVE! (${activeDomain.turnsLeft} turns left)`);
-                    onQueueEmpty = showActionMenu; processTextQueue();
-                } else {
+                if (activeDomain.turnsLeft > 0) { queueText(`DOMAIN ACTIVE! (${activeDomain.turnsLeft} turns left)`); onQueueEmpty = showActionMenu; processTextQueue(); } 
+                else {
                     document.getElementById('game-wrapper').classList.add('glitch-effect'); setTimeout(() => document.getElementById('game-wrapper').classList.remove('glitch-effect'), 500);
                     queueText(`DOMAIN COLLAPSED! ${player.name} is VULNERABLE!`); activeDomain = null; player.vulnerable = true;
-                    document.body.className = player.transformed ? 'transformed-ui' : ''; 
-                    onQueueEmpty = executeEnemyTurn; processTextQueue();
+                    document.body.className = player.transformed ? 'transformed-ui' : ''; onQueueEmpty = executeEnemyTurn; processTextQueue();
                 }
             } else { player.domainMeter = Math.min(5, player.domainMeter + 1); executeEnemyTurn(); }
-        };
-        processTextQueue();
+        }; processTextQueue();
     }
 
     function executeEnemyTurn() {
@@ -708,18 +476,9 @@
                 onQueueEmpty = () => {
                     if (player.hp <= player.maxHp * 0.5) {
                         queueText(`Counter with your ULTIMATE?`);
-                        onQueueEmpty = () => {
-                            document.getElementById('dialogue-text').innerText = "COUNTER?";
-                            document.getElementById('action-menu').innerHTML = `<button class="menu-btn" style="color:red; grid-column: span 2;" onclick="acceptClash()">YES (ULTIMATE)</button><button class="menu-btn" style="grid-column: span 2;" onclick="declineClash()">NO (DEFEND)</button>`;
-                            document.getElementById('action-menu').classList.remove('hidden'); gameState = "MENU";
-                        }; processTextQueue();
+                        onQueueEmpty = () => { document.getElementById('dialogue-text').innerText = "COUNTER?"; document.getElementById('action-menu').innerHTML = `<button class="menu-btn" style="color:red; grid-column: span 2;" onclick="acceptClash()">YES (ULTIMATE)</button><button class="menu-btn" style="grid-column: span 2;" onclick="declineClash()">NO (DEFEND)</button>`; document.getElementById('action-menu').classList.remove('hidden'); gameState = "MENU"; }; processTextQueue();
                     } else {
-                        playAnim('ENEMY_ULTIMATE', () => {
-                            triggerScreenShatter();
-                            let dmg = getDamage(e.atk, 5.0, 'enemy'); player.hp = Math.max(0, player.hp - dmg); updateHUD();
-                            queueText(`You couldn't counter! Took ${dmg} DMG!`);
-                            onQueueEmpty = () => { if(player.hp<=0) handleDefeat(); else showActionMenu(); }; processTextQueue();
-                        });
+                        playAnim('ENEMY_ULTIMATE', () => { triggerScreenShatter(); let dmg = getDamage(e.atk, 2.5, 'enemy'); player.hp = Math.max(0, player.hp - dmg); updateHUD(); queueText(dmg===0?`Blocked by SHIELD!`:`Took ${dmg} DMG!`); onQueueEmpty = () => { if(player.hp<=0) handleDefeat(); else showActionMenu(); }; processTextQueue(); });
                     }
                 }; processTextQueue();
             }); return;
@@ -727,90 +486,115 @@
 
         if (!activeDomain && e.domain) {
             triggerCutscene(`${e.name}: DOMAIN EXPANSION!\n${e.domain.name}`, () => {
-                activeDomain = { owner: 'enemy', color1: e.domain.color1, color2: e.domain.color2, turnsLeft: 99 };
-                createShockwave(120, 80, e.domain.color1, 15, 10); queueText(`The enemy expanded their Domain!`); e.domain = null;
-                onQueueEmpty = showActionMenu; processTextQueue();
+                activeDomain = { owner: 'enemy', color1: e.domain.color1, color2: e.domain.color2, turnsLeft: 99 }; createShockwave(120, 80, e.domain.color1, 15, 10); queueText(`Enemy expanded their Domain!`); e.domain = null; onQueueEmpty = showActionMenu; processTextQueue();
             }); return;
         }
 
         queueText(`--- ENEMY TURN ---`); queueText(`${e.name} used ${e.eMove}!`);
         onQueueEmpty = () => {
-            playAnim('ENEMY_ATTACK', () => {
-                let dmg = getDamage(e.atk, 1.2, 'enemy'); player.hp = Math.max(0, player.hp - dmg); updateHUD();
-                queueText(`Took ${dmg} damage!`);
-                onQueueEmpty = () => { if(player.hp<=0) handleDefeat(); else showActionMenu(); }; processTextQueue();
-            }, e.color);
+            playAnim('ENEMY_ATTACK', () => { let dmg = getDamage(e.atk, 1.2, 'enemy'); player.hp = Math.max(0, player.hp - dmg); updateHUD(); queueText(dmg===0?`Blocked by SHIELD!`:`Took ${dmg} damage!`); onQueueEmpty = () => { if(player.hp<=0) handleDefeat(); else showActionMenu(); }; processTextQueue(); }, e.color);
         }; processTextQueue();
     }
 
-    // --- BEAM CLASH ---
-    window.acceptClash = function() {
-        document.getElementById('action-menu').classList.add('hidden'); resetActionMenu();
-        document.getElementById('game-wrapper').classList.add('glitch-effect'); setTimeout(() => document.getElementById('game-wrapper').classList.remove('glitch-effect'), 500);
-        triggerCutscene(`${player.name}:\n${player.ultName}!`, startClash);
-    }
-    window.declineClash = function() {
-        document.getElementById('action-menu').classList.add('hidden'); resetActionMenu();
-        playAnim('ENEMY_ULTIMATE', () => {
-            triggerScreenShatter();
-            let dmg = getDamage(currentEnemy.atk, 3.5, 'enemy'); player.hp = Math.max(0, player.hp - dmg); updateHUD();
-            queueText(`Guarded! But still took ${dmg} DMG!`);
-            onQueueEmpty = () => { if(player.hp<=0) handleDefeat(); else showActionMenu(); }; processTextQueue();
-        });
-    }
-    function resetActionMenu() { document.getElementById('action-menu').innerHTML = `<button class="menu-btn" onclick="openMoves()">MOVES</button><button class="menu-btn" id="btn-domain" onclick="handleAction('domain')" style="color:#a855f7;">DOMAIN</button><button class="menu-btn" id="btn-heal" onclick="handleAction('heal')">HEAL</button><button class="menu-btn" id="btn-ultimate" onclick="handleAction('ultimate')" style="color:#ef4444; font-weight:bold;">ULTIMATE</button>`; }
+    window.acceptClash = function() { document.getElementById('action-menu').classList.add('hidden'); resetActionMenu(); document.getElementById('game-wrapper').classList.add('glitch-effect'); setTimeout(() => document.getElementById('game-wrapper').classList.remove('glitch-effect'), 500); triggerCutscene(`${player.name}:\n${player.ultName}!`, startClash); }
+    window.declineClash = function() { document.getElementById('action-menu').classList.add('hidden'); resetActionMenu(); playAnim('ENEMY_ULTIMATE', () => { triggerScreenShatter(); let dmg = getDamage(currentEnemy.atk, 1.5, 'enemy'); player.hp = Math.max(0, player.hp - dmg); updateHUD(); queueText(dmg===0?`Guarded by SHIELD!`:`Guarded! Took ${dmg} DMG!`); onQueueEmpty = () => { if(player.hp<=0) handleDefeat(); else showActionMenu(); }; processTextQueue(); }); }
+    function resetActionMenu() { document.getElementById('action-menu').innerHTML = `<button class="menu-btn" onclick="openMenu('moves')">MOVES</button><button class="menu-btn" onclick="openMenu('items')">ITEMS</button><button class="menu-btn" id="btn-domain" onclick="handleAction('domain')" style="color:#a855f7;">DOMAIN</button><button class="menu-btn" id="btn-awaken" onclick="handleAction('awaken')" style="color:#eab308;">AWAKEN</button><button class="menu-btn" id="btn-ultimate" onclick="handleAction('ultimate')" style="color:#ef4444; font-weight:bold; grid-column:span 2;">ULTIMATE</button>`; }
     function startClash() { gameState = "CLASH"; clashActive = true; clashValue = 50; clashTimer = 100; document.getElementById('clash-layer').classList.remove('hidden'); updateClashUI(); }
     window.mashClash = function() { if(!clashActive) return; clashValue += 7; emitParticles(120, 80, player.color, 3, 10, 20); updateClashUI(); }
     function updateClashUI() { let bar = document.getElementById('clash-bar-fill'); bar.style.width = Math.max(0, Math.min(100, clashValue)) + '%'; bar.style.backgroundColor = clashValue > 50 ? player.color : '#ef4444'; }
     function resolveClash() {
         clashActive = false; document.getElementById('clash-layer').classList.add('hidden');
-        if (clashValue >= 100 || (clashValue > 50 && clashTimer <= 0)) {
-            playAnim('PLAYER_ULTIMATE', () => {
-                triggerScreenShatter();
-                let dmg = getDamage(player.atk, 6.0, 'player'); currentEnemy.hp = Math.max(0, currentEnemy.hp - dmg); updateHUD();
-                queueText(`CLASH WON! You overwhelmed ${currentEnemy.name}! Dealt ${dmg} DMG!`); endPlayerTurn();
-            });
+        if (clashValue >= 100 || (clashValue > 50 && clashTimer <= 0)) { playAnim('PLAYER_ULTIMATE', () => { triggerScreenShatter(); let dmg = getDamage(player.atk, 6.0, 'player', true); currentEnemy.hp = Math.max(0, currentEnemy.hp - dmg); updateHUD(); queueText(`CLASH WON! Dealt ${dmg} DMG!`); endPlayerTurn(); }); } 
+        else { playAnim('ENEMY_ULTIMATE', () => { triggerScreenShatter(); let dmg = getDamage(currentEnemy.atk, 6.0, 'enemy'); player.hp = Math.max(0, player.hp - dmg); updateHUD(); queueText(dmg===0?`Lost Clash! But SHIELD blocked it!`:`CLASH LOST! Took ${dmg} DMG!`); onQueueEmpty = () => { if(player.hp<=0) handleDefeat(); else showActionMenu(); }; processTextQueue(); }); }
+    }
+
+    // --- RENDERING & EFFECTS ---
+    function triggerScreenShatter() {
+        let flash = document.getElementById('flash-overlay'); flash.classList.remove('super-flash'); void flash.offsetWidth; flash.classList.add('super-flash');
+        let wrapper = document.getElementById('game-wrapper'); wrapper.classList.add('shatter-shake'); setTimeout(() => wrapper.classList.remove('shatter-shake'), 1200);
+        glassShards = []; let cx = 450; let cy = 300; 
+        for(let i=0; i<80; i++) {
+            let angle = Math.random() * Math.PI * 2, speed = 10 + Math.random() * 30, points = []; let numPts = 3 + Math.floor(Math.random()*5);
+            for(let p=0; p<numPts; p++) points.push({ x: (Math.random()-0.5)*120, y: (Math.random()-0.5)*120 });
+            glassShards.push({ x: cx + (Math.random()-0.5)*50, y: cy + (Math.random()-0.5)*50, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed, rot: Math.random()*Math.PI*2, vrot: (Math.random()-0.5)*1.5, points: points, life: 80 });
+        }
+    }
+    function emitParticles(x, y, color, count, speed=2, life=30) { for(let i=0; i<count; i++) particles.push({ x, y, vx: (Math.random()-0.5)*speed*2, vy: (Math.random()-0.5)*speed*2, color, life: life + Math.random()*15, maxLife: life }); }
+    function createShockwave(x, y, color, speed=5, width=3) { shockwaves.push({ x, y, radius: 1, maxRadius: 200, color, speed, width, life: 1.0 }); }
+    function darkenColor(hex, factor) { if(!hex || hex === 'none') return '#000'; let r = parseInt(hex.slice(1,3), 16) * factor; let g = parseInt(hex.slice(3,5), 16) * factor; let b = parseInt(hex.slice(5,7), 16) * factor; return `rgb(${Math.floor(r)},${Math.floor(g)},${Math.floor(b)})`; }
+
+    function drawSprite(arr, x, y, scale=4, flash=false, isTransformed=false, overrideColor=null, auraColor=null) {
+        if (!arr) return;
+        ctx.fillStyle = 'rgba(0,0,0,0.4)'; for(let r=0; r<16; r++) for(let c=0; c<16; c++) if(arr[r][c] !== '0') ctx.fillRect(x + c*scale + scale, y + r*scale + scale*2, scale, scale);
+        if (isTransformed && auraColor) { ctx.shadowColor = auraColor; ctx.shadowBlur = 20; }
+        for (let r=0; r<16; r++) {
+            for (let c=0; c<16; c++) {
+                let ch = arr[r][c];
+                if (ch !== '0') {
+                    let fill = flash ? '#ffffff' : colors[ch];
+                    if (ch === '2' && overrideColor) fill = overrideColor;
+                    if (ch === '6' && isTransformed && auraColor) fill = auraColor; // Replace hair color if transformed
+                    if (!flash && r > 9 && ch !== '1') fill = darkenColor(fill, 0.6);
+                    ctx.fillStyle = fill; ctx.fillRect(x + c*scale, y + r*scale, scale, scale);
+                }
+            }
+        }
+        ctx.shadowBlur = 0;
+    }
+
+    function renderGame() {
+        ctx.clearRect(0, 0, 240, 160); let camX = 0, camY = 0; if (animState === "SHAKE") { camX = (Math.random() - 0.5) * 12; camY = (Math.random() - 0.5) * 12; }
+        ctx.save(); ctx.translate(camX, camY);
+
+        if (activeDomain) {
+            let grad = ctx.createRadialGradient(120, 80, 10, 120, 80, 150 + Math.sin(frameCount*0.05)*20);
+            grad.addColorStop(0, activeDomain.color1); grad.addColorStop(1, activeDomain.color2); ctx.fillStyle = grad; ctx.fillRect(0,0,240,160);
+            if (frameCount%3===0) emitParticles(Math.random()*240, 160, '#ffffff', 2, 0.8, 60);
         } else {
-            playAnim('ENEMY_ULTIMATE', () => {
-                triggerScreenShatter();
-                let dmg = getDamage(currentEnemy.atk, 6.0, 'enemy'); player.hp = Math.max(0, player.hp - dmg); updateHUD();
-                queueText(`CLASH LOST! Overpowered! Took ${dmg} DMG!`);
-                onQueueEmpty = () => { if(player.hp<=0) handleDefeat(); else showActionMenu(); }; processTextQueue();
-            });
+            let skyGrad = ctx.createLinearGradient(0,0,0,100); skyGrad.addColorStop(0, '#1e1b4b'); skyGrad.addColorStop(1, '#4c1d95'); ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, 240, 100);
+            let floorGrad = ctx.createLinearGradient(0,100,0,160); floorGrad.addColorStop(0, '#312e81'); floorGrad.addColorStop(1, '#1e1b4b'); ctx.fillStyle = floorGrad; ctx.fillRect(0, 100, 240, 60);
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(180, 75, 45, 12, 0, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.ellipse(60, 145, 50, 15, 0, 0, Math.PI*2); ctx.fill();
+        }
+
+        if (eVis && currentEnemy) drawSprite(currentEnemy.sprite, ePos.x + eOff.x, ePos.y + eOff.y + (currentEnemy.isSans?Math.sin(frameCount*0.1)*5:0), 4, eFlash, false, currentEnemy.color);
+        if (pVis) drawSprite(player.transformed ? spr_awaken : spr_base, pPos.x + pOff.x, pPos.y + pOff.y, 4, pFlash, player.transformed, player.color, player.transformData.color);
+
+        shockwaves.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, Math.PI*2); ctx.strokeStyle = `rgba(${parseInt(s.color.slice(1,3),16)},${parseInt(s.color.slice(3,5),16)},${parseInt(s.color.slice(5,7),16)},${s.life})`; ctx.lineWidth = s.width; ctx.stroke(); });
+        particles.forEach(p => { ctx.fillStyle = p.color; let size = Math.max(1, (p.life/p.maxLife) * 4); ctx.fillRect(p.x, p.y, size, size); });
+
+        if (animState === "BEAM") { ctx.fillStyle = animData.color; ctx.fillRect(animData.x, animData.y, animData.w, animData.h); ctx.fillStyle = '#fff'; ctx.fillRect(animData.x, animData.y + animData.h/4, animData.w, animData.h/2); emitParticles(animData.x + (animData.w > 0 ? animData.w : 0), animData.y + animData.h/2, animData.color, 5, 8, 20); } 
+        else if (animState === "SLASH") { ctx.strokeStyle = '#fff'; ctx.lineWidth = animData.w; ctx.beginPath(); ctx.moveTo(animData.x1, animData.y1); ctx.lineTo(animData.x2, animData.y2); ctx.stroke(); ctx.strokeStyle = animData.color; ctx.lineWidth = animData.w/2; ctx.beginPath(); ctx.moveTo(animData.x1, animData.y1); ctx.lineTo(animData.x2, animData.y2); ctx.stroke(); } 
+        else if (animState === "GLITCH") { for(let i=0; i<10; i++) { ctx.fillStyle = ['#f00', '#0f0', '#00f', '#fff'][Math.floor(Math.random()*4)]; ctx.fillRect(Math.random()*240, Math.random()*160, Math.random()*40, Math.random()*10); } }
+        ctx.restore();
+
+        sCtx.clearRect(0,0,900,600);
+        if (glassShards.length > 0) {
+            for(let i = glassShards.length-1; i>=0; i--) {
+                let s = glassShards[i]; s.x += s.vx; s.y += s.vy; s.rot += s.vrot; s.life--;
+                sCtx.save(); sCtx.translate(s.x, s.y); sCtx.rotate(s.rot); sCtx.beginPath(); sCtx.moveTo(s.points[0].x, s.points[0].y); for(let j=1; j<s.points.length; j++) sCtx.lineTo(s.points[j].x, s.points[j].y); sCtx.closePath();
+                sCtx.fillStyle = `rgba(255, 255, 255, ${s.life/80})`; sCtx.fill(); sCtx.strokeStyle = `rgba(100, 200, 255, ${(s.life/80)*0.8})`; sCtx.lineWidth = 3; sCtx.stroke(); sCtx.restore();
+                if (s.life <= 0) glassShards.splice(i, 1);
+            }
         }
     }
 
-    // --- CRAZY ANIMATIONS ---
-    function triggerCutscene(text, callback) {
-        gameState = "CUTSCENE"; let layer = document.getElementById('cutscene-layer'); let textEl = document.getElementById('cutscene-text');
-        textEl.innerText = text; textEl.style.animation = 'none'; textEl.offsetHeight; textEl.style.animation = null;
-        layer.classList.remove('hidden'); setTimeout(() => { layer.classList.add('hidden'); callback(); }, 1500);
-    }
-
+    function triggerCutscene(text, callback) { gameState = "CUTSCENE"; let layer = document.getElementById('cutscene-layer'); let textEl = document.getElementById('cutscene-text'); textEl.innerText = text; textEl.style.animation = 'none'; textEl.offsetHeight; textEl.style.animation = null; layer.classList.remove('hidden'); setTimeout(() => { layer.classList.add('hidden'); callback(); }, 1500); }
     function playAnim(type, callback, color = '#ffffff') {
         animState = type; animTimer = 0; animData.color = color;
         let int = setInterval(() => {
             animTimer++;
             if (type === 'PLAYER_ATTACK') {
-                if(animTimer===1) pOff.x = 10; 
-                if(animTimer===10) { pOff.x=0; animState="BEAM"; animData={x:80,y:90,w:0,h:12,color}; }
-                if(animTimer>10 && animTimer<20) animData.w += 15;
-                if(animTimer===20) { animState="SHAKE"; eFlash=true; emitParticles(150,30,color,15,5,20); }
+                if(animTimer===1) pOff.x = 10; if(animTimer===10) { pOff.x=0; animState="BEAM"; animData={x:80,y:90,w:0,h:12,color}; }
+                if(animTimer>10 && animTimer<20) animData.w += 15; if(animTimer===20) { animState="SHAKE"; eFlash=true; emitParticles(150,30,color,15,5,20); }
                 if(animTimer===35) { eFlash=false; animState=null; clearInterval(int); callback(); }
-            }
-            else if (type === 'ENEMY_ATTACK') {
-                if(animTimer===1) eOff.x = -10; 
-                if(animTimer===10) { eOff.x=0; animState="BEAM"; animData={x:150,y:30,w:0,h:18,color}; }
-                if(animTimer>10 && animTimer<20) { animData.w -= 15; animData.x -= 15; }
-                if(animTimer===20) { animState="SHAKE"; pFlash=true; emitParticles(30,80,color,15,5,20); }
+            } else if (type === 'ENEMY_ATTACK') {
+                if(animTimer===1) eOff.x = -10; if(animTimer===10) { eOff.x=0; animState="BEAM"; animData={x:150,y:30,w:0,h:18,color}; }
+                if(animTimer>10 && animTimer<20) { animData.w -= 15; animData.x -= 15; } if(animTimer===20) { animState="SHAKE"; pFlash=true; emitParticles(30,80,color,15,5,20); }
                 if(animTimer===35) { pFlash=false; animState=null; clearInterval(int); callback(); }
-            }
-            else if (type === 'PLAYER_HEAL') {
-                if(animTimer%5===0) emitParticles(pPos.x+16, pPos.y+16, color, 6, 4, 25);
-                if(animTimer===30) { animState=null; clearInterval(int); callback(); }
-            }
-            else if (type === 'PLAYER_ULTIMATE') {
-                // Different Ultimate Types Based on Character
+            } else if (type === 'PLAYER_HEAL') {
+                if(animTimer%2===0) { emitParticles(pPos.x+16, pPos.y+16, color, 10, 8, 30); createShockwave(pPos.x+16, pPos.y+16, color, 8, 2); }
+                if(animTimer===40) { animState=null; clearInterval(int); callback(); }
+            } else if (type === 'PLAYER_ULTIMATE') {
                 let uc = player.color;
                 if (player.ultType === "BEAM") {
                     if(animTimer===1) { animState="SHAKE"; emitParticles(pPos.x+16, pPos.y+16, uc, 40, 10, 50); }
@@ -829,121 +613,100 @@
                     if(animTimer===25) { animState="SHAKE"; pOff.x = 0; pOff.y = 0; document.getElementById('game-wrapper').style.filter = "none"; emitParticles(180, 50, uc, 50, 15, 30); }
                 } else if (player.ultType === "QUAKE") {
                     if(animTimer===1) { animState="SHAKE"; document.getElementById('game-wrapper').classList.add('shatter-shake'); }
-                    if(animTimer===20) { 
-                        animState="SHAKE"; document.getElementById('game-wrapper').classList.remove('shatter-shake'); eFlash=true; 
-                        for(let q=0; q<5; q++) createShockwave(180, 100, uc, 15+q*2, 10);
-                        emitParticles(180, 100, '#444', 100, 15, 40); 
-                    }
+                    if(animTimer===20) { animState="SHAKE"; document.getElementById('game-wrapper').classList.remove('shatter-shake'); eFlash=true; for(let q=0; q<5; q++) createShockwave(180, 100, uc, 15+q*2, 10); emitParticles(180, 100, '#444', 100, 15, 40); }
                 } else if (player.ultType === "GLITCH") {
                     if(animTimer===1) { animState="GLITCH"; document.getElementById('game-wrapper').classList.add('glitch-effect'); }
                     if(animTimer===30) { animState="SHAKE"; eFlash=true; createShockwave(180, 50, uc, 50, 5); document.getElementById('game-wrapper').classList.remove('glitch-effect'); }
                 }
-
                 if(animTimer===65) { eFlash=false; animState=null; clearInterval(int); callback(); }
-            }
-            else if (type === 'ENEMY_ULTIMATE') {
+            } else if (type === 'ENEMY_ULTIMATE') {
                 let ec = currentEnemy.color;
                 if(animTimer===1) { animState="SHAKE"; emitParticles(ePos.x+16, ePos.y+16, ec, 40, 10, 50); }
                 if(animTimer===20) { animState="BEAM"; animData={x:190,y:-20,w:0,h:200,color:ec}; document.getElementById('game-wrapper').style.filter = "invert(1) hue-rotate(180deg)"; } 
                 if(animTimer>20 && animTimer<35) { animData.w -= 20; animData.x -= 20; }
                 if(animTimer===35) { animState="SHAKE"; pFlash=true; emitParticles(30,80,ec,80,20,40); document.getElementById('game-wrapper').style.filter = "none"; createShockwave(60, 120, ec, 10, 5); }
                 if(animTimer===65) { pFlash=false; animState=null; clearInterval(int); callback(); }
-            }
-            else if (type === 'ENEMY_FAINT') {
+            } else if (type === 'ENEMY_FAINT') {
                 eOff.y += 4; emitParticles(ePos.x+16, ePos.y+eOff.y, '#ffffff', 2, 1, 10);
                 if (animTimer === 30) { eVis = false; animState=null; clearInterval(int); callback(); }
             }
         }, 1000/60); 
     }
 
-    // --- PROGRESSION & LOOT ---
+    // --- PROGRESSION, LOOT & SHOP ---
     function handleVictory() {
         playAnim('ENEMY_FAINT', () => {
-            queueText(`You obliterated ${currentEnemy.name}!`);
+            let drop = Math.floor(currentFloor * (Math.random() * 10 + 5) * diffMult);
+            player.money += drop;
+            queueText(`Obliterated ${currentEnemy.name}! Gained $${drop}.`);
             queueText(`${player.name} grew to level ${player.level + 1}!`);
-            onQueueEmpty = () => { showLootScreen(); };
-            processTextQueue();
+            onQueueEmpty = () => { showLootScreen(); }; processTextQueue();
         });
     }
 
-    function handleDefeat() {
-        queueText(`${player.name} was overwhelmed...`);
-        onQueueEmpty = () => { 
-            document.getElementById('death-stats').innerText = `You reached TOWER FLOOR ${currentFloor}.`;
-            document.getElementById('game-over-screen').classList.remove('hidden'); gameState = "GAMEOVER"; 
-        };
-        processTextQueue();
-    }
+    function handleDefeat() { queueText(`${player.name} was overwhelmed...`); onQueueEmpty = () => { document.getElementById('death-stats').innerText = `You reached TOWER FLOOR ${currentFloor}.`; document.getElementById('game-over-screen').classList.remove('hidden'); gameState = "GAMEOVER"; }; processTextQueue(); }
 
     function showLootScreen() {
-        gameState = "LOOT"; document.getElementById('loot-screen').classList.remove('hidden');
-        let container = document.getElementById('loot-container'); container.innerHTML = '';
-        
+        gameState = "LOOT"; document.getElementById('loot-screen').classList.remove('hidden'); let container = document.getElementById('loot-container'); container.innerHTML = '';
         let rewards = [];
-        while(rewards.length < 3) {
-            let randMove = ANIME_MOVES[Math.floor(Math.random() * ANIME_MOVES.length)];
-            if(!rewards.find(r => r.move.name === randMove.name)) rewards.push({type: 'move', move: randMove, name: randMove.name, desc: randMove.desc, color: randMove.color});
-        }
-
-        rewards.forEach(r => {
-            let card = document.createElement('div'); card.className = 'loot-card';
-            card.innerHTML = `<div class="loot-title" style="color:${r.color}">${r.name}</div><div class="loot-desc">${r.desc}</div><div class="loot-type">${r.move.type.toUpperCase()}</div>`;
-            card.onclick = () => claimLoot(r); container.appendChild(card);
-        });
+        while(rewards.length < 3) { let randMove = ALL_ATTACKS[Math.floor(Math.random() * ALL_ATTACKS.length)]; if(!rewards.find(r => r.n === randMove.n)) rewards.push(randMove); }
+        rewards.forEach(r => { let card = document.createElement('div'); card.className = 'card'; card.innerHTML = `<div class="card-title" style="color:${r.c}">${r.n}</div><div class="card-desc">${r.d}</div><div class="card-desc" style="background:#333; padding:0.2vw;">${r.t.toUpperCase()}</div>`; card.onclick = () => claimLoot(r); container.appendChild(card); });
     }
 
-    window.skipLoot = function() { document.getElementById('loot-screen').classList.add('hidden'); advanceFloor(); }
-
-    function claimLoot(reward) {
-        if (player.moves.find(m => m.name === reward.move.name)) return alert("You already know this move!");
-        
-        if (player.moves.length >= 4) {
-            pendingLootMove = reward.move; document.getElementById('loot-screen').classList.add('hidden'); showReplaceScreen();
-        } else {
-            player.moves.push(reward.move); document.getElementById('loot-screen').classList.add('hidden'); advanceFloor();
-        }
+    function claimLoot(move) {
+        if (player.moves.find(m => m.n === move.n)) return alert("You already know this move!");
+        if (player.moves.length >= 4) { pendingLootMove = move; document.getElementById('loot-screen').classList.add('hidden'); showReplaceScreen(); } 
+        else { player.moves.push(move); document.getElementById('loot-screen').classList.add('hidden'); checkShopAndAdvance(); }
     }
 
-    function showReplaceScreen() {
-        gameState = "REPLACE"; document.getElementById('replace-screen').classList.remove('hidden');
-        document.getElementById('replace-prompt').innerText = `Learn [${pendingLootMove.name}]. Which move will you forget?`;
-        let grid = document.getElementById('replace-grid'); grid.innerHTML = '';
-        
-        player.moves.forEach((m, i) => {
-            let btn = document.createElement('button'); btn.className = 'big-btn'; btn.style.width = '100%'; btn.style.fontSize = '1.2vw';
-            btn.innerHTML = `<span style="color:${m.color}">${m.name}</span>`;
-            btn.onclick = () => { player.moves[i] = pendingLootMove; document.getElementById('replace-screen').classList.add('hidden'); advanceFloor(); };
-            grid.appendChild(btn);
-        });
+    function showReplaceScreen() { gameState = "REPLACE"; document.getElementById('replace-screen').classList.remove('hidden'); document.getElementById('replace-prompt').innerText = `Learn [${pendingLootMove.n}]. Which move will you forget?`; let grid = document.getElementById('replace-grid'); grid.innerHTML = ''; player.moves.forEach((m, i) => { let btn = document.createElement('button'); btn.className = 'big-btn'; btn.style.width = '100%'; btn.style.fontSize = '1.2vw'; btn.innerHTML = `<span style="color:${m.c}">${m.n}</span>`; btn.onclick = () => { player.moves[i] = pendingLootMove; document.getElementById('replace-screen').classList.add('hidden'); checkShopAndAdvance(); }; grid.appendChild(btn); }); }
+    window.cancelReplace = function() { document.getElementById('replace-screen').classList.add('hidden'); checkShopAndAdvance(); }
+    window.skipMenu = function(menuId) { document.getElementById(menuId + '-screen').classList.add('hidden'); if(menuId==='loot') checkShopAndAdvance(); else advanceFloor(); }
+
+    function checkShopAndAdvance() {
+        if(currentFloor % 5 === 0) {
+            gameState = "SHOP"; document.getElementById('shop-screen').classList.remove('hidden'); document.getElementById('shop-money').innerText = player.money;
+            let grid = document.getElementById('shop-grid'); grid.innerHTML = '';
+            
+            // Generate Shop Items (3 Items, 2 Moves)
+            let sItems = [ITEMS_DB[0], ITEMS_DB[1], ITEMS_DB[2], ITEMS_DB[3]].sort(()=>0.5-Math.random()).slice(0,3);
+            let sMoves = []; while(sMoves.length < 2) { let m = ALL_ATTACKS[Math.floor(Math.random() * ALL_ATTACKS.length)]; if(!sMoves.find(x=>x.n===m.n)) sMoves.push(m); }
+
+            sItems.forEach(it => { let card = document.createElement('div'); card.className = 'card'; card.innerHTML = `<div class="card-title">${it.name}</div><div class="card-desc">${it.desc}</div><div class="card-price">$${it.price}</div>`; card.onclick = () => buyItem(it); grid.appendChild(card); });
+            sMoves.forEach(mv => { let price = 250; let card = document.createElement('div'); card.className = 'card'; card.innerHTML = `<div class="card-title" style="color:${mv.c}">${mv.n}</div><div class="card-desc">${mv.d}</div><div class="card-price">$${price}</div>`; card.onclick = () => buyMove(mv, price); grid.appendChild(card); });
+        } else { advanceFloor(); }
     }
 
-    window.cancelReplace = function() { document.getElementById('replace-screen').classList.add('hidden'); advanceFloor(); }
+    function buyItem(it) {
+        if(player.money < it.price) return alert("Not enough money!");
+        player.money -= it.price; document.getElementById('shop-money').innerText = player.money;
+        let exist = player.items.find(x => x.id === it.id); if(exist) exist.count++; else player.items.push({...it, count:1});
+        alert(`Bought ${it.name}!`);
+    }
+
+    function buyMove(mv, price) {
+        if(player.money < price) return alert("Not enough money!");
+        if(player.moves.find(m => m.n === mv.n)) return alert("Already know this move!");
+        if(player.moves.length >= 4) return alert("Move slots full! Can't buy.");
+        player.money -= price; document.getElementById('shop-money').innerText = player.money;
+        player.moves.push(mv); alert(`Learned ${mv.n}!`);
+    }
 
     function advanceFloor() {
-        currentFloor++; player.level++;
-        player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.2));
-        player.maxHp += 10; player.atk += 5; 
+        currentFloor++; player.level++; player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.2)); player.maxHp += 10; player.atk += 5; 
         startEncounter();
     }
 
-    // --- MAIN LOOP ---
     function gameLoop() {
         frameCount++;
-        if (gameState === "TEXT" || gameState === "INTRO") {
-            if (isTyping && frameCount % typeSpeed === 0) {
-                typedText += currentText.charAt(textCharIndex); document.getElementById('dialogue-text').innerText = typedText; textCharIndex++;
-                if (textCharIndex >= currentText.length) { isTyping = false; document.getElementById('dialogue-arrow').classList.remove('hidden'); }
-            }
-        } else if (gameState === "CLASH") {
-            clashTimer--; clashValue -= 1.5; updateClashUI();
-            if(frameCount%2===0) emitParticles(120 + (clashValue-50)*2, 80, (Math.random()>0.5?player.color:'#ef4444'), 4, 8, 15);
-            if (clashValue >= 100 || clashValue <= 0 || clashTimer <= 0) resolveClash();
-        }
-        updateParticles(); renderGame(); requestAnimationFrame(gameLoop);
+        if (gameState === "TEXT" || gameState === "INTRO") { if (isTyping && frameCount % 2 === 0) { typedText += currentText.charAt(textCharIndex); document.getElementById('dialogue-text').innerText = typedText; textCharIndex++; if (textCharIndex >= currentText.length) { isTyping = false; document.getElementById('dialogue-arrow').classList.remove('hidden'); } } } 
+        else if (gameState === "CLASH") { clashTimer--; clashValue -= 1.5; updateClashUI(); if(frameCount%2===0) emitParticles(120 + (clashValue-50)*2, 80, (Math.random()>0.5?player.color:'#ef4444'), 4, 8, 15); if (clashValue >= 100 || clashValue <= 0 || clashTimer <= 0) resolveClash(); }
+        for(let i = particles.length-1; i>=0; i--) { let p = particles[i]; p.x += p.vx; p.y += p.vy; p.life--; if (p.life <= 0) particles.splice(i, 1); }
+        for(let i = shockwaves.length-1; i>=0; i--) { let s = shockwaves[i]; s.radius += s.speed; s.life -= 0.05; if (s.life <= 0 || s.radius >= s.maxRadius) shockwaves.splice(i, 1); }
+        renderGame(); requestAnimationFrame(gameLoop);
     }
     
     requestAnimationFrame(gameLoop);
-
 </script>
 </body>
 </html>
