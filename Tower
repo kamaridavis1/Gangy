@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GANGY: Infinite Anime Tower</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505; --gb-white: #f8f8f8; --gb-black: #181818;
+            --gb-gray: #686868; --gb-lightgray: #a8a8a8;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color); display: flex; justify-content: center; align-items: center;
+            font-family: 'Press Start 2P', monospace; color: var(--gb-black);
+            user-select: none; touch-action: none; transition: background-color 0.5s, color 0.5s;
+            overflow: hidden;
+        }
+
+        body.domain-ui { --bg-color: #0f001a; --gb-white: #1a0033; --gb-black: #e6ccff; --gb-gray: #9933ff; --gb-lightgray: #d9b3ff; animation: domainPulse 2s infinite alternate; }
+        @keyframes domainPulse { 0% { box-shadow: inset 0 0 5vw #a855f7; } 100% { box-shadow: inset 0 0 15vw #6b21a8; } }
+
+        body.transformed-ui { --bg-color: #1a0000; --gb-white: #000; --gb-black: #fca5a5; --gb-gray: #ef4444; --gb-lightgray: #7f1d1d; }
+
+        #game-wrapper {
+            position: relative; width: 100%; max-width: 900px; aspect-ratio: 3 / 2;
+            background-color: var(--gb-white); overflow: hidden; border: 0.5vw solid var(--gb-black);
+            box-shadow: 0 10px 50px rgba(0,0,0,0.9); image-rendering: pixelated; transition: all 0.3s;
+        }
+
+        #game-wrapper::after {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px; z-index: 5; pointer-events: none;
+        }
+
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        
+        /* Shard Canvas for the Screen Shatter */
+        #shatterCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 45; pointer-events: none; }
+
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; display: flex; flex-direction: column; }
+        .hidden { display: none !important; }
+
+        /* --- HUD --- */
+        #floor-indicator {
+            position: absolute; top: 0.5vw; left: 50%; transform: translateX(-50%);
+            background: var(--gb-black); color: var(--gb-white); padding: 0.5vw 1vw;
+            font-size: 1vw; border-radius: 0.5vw; border: 0.2vw solid var(--gb-gray); z-index: 15;
+            text-align: center; letter-spacing: 0.1vw;
+        }
+
+        .hud-box {
+            position: absolute; background: var(--gb-white); border: 0.4vw solid var(--gb-black);
+            border-radius: 0.5vw; padding: 1vw; box-shadow: 0.4vw 0.4vw 0 rgba(0,0,0,0.3); z-index: 12;
+        }
+
+        .hud-name { font-size: 1.4vw; margin-bottom: 0.5vw; text-transform: uppercase; color: var(--gb-black); }
+        .hud-lv { font-size: 0.9vw; float: right; color: var(--gb-black); }
+        .hp-container { display: flex; align-items: center; margin-bottom: 0.5vw; background: var(--gb-black); border-radius: 0.3vw; padding: 0.2vw 0.5vw; }
+        .hp-label { color: #facc15; font-size: 1vw; margin-right: 0.5vw; }
+        .hp-bar-bg { flex-grow: 1; height: 1vw; background: var(--gb-gray); border: 0.2vw solid var(--gb-black); position: relative; }
+        .hp-bar-fill { height: 100%; background: #22c55e; width: 100%; transition: width 0.3s; }
+        .hp-text { font-size: 1.2vw; text-align: right; color: var(--gb-black); }
+
+        #enemy-hud { top: 3vw; left: 2vw; width: 35%; }
+        #player-hud { bottom: 33%; right: 2vw; width: 40%; }
+        
+        .vulnerable-shake { animation: vulnShake 0.3s infinite; border-color: #ef4444 !important; background-color: #fee2e2 !important; }
+        @keyframes vulnShake { 0%{transform:translateX(0);} 25%{transform:translateX(-0.5vw);} 75%{transform:translateX(0.5vw);} }
+
+        /* --- BOTTOM PANEL --- */
+        #bottom-panel {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 30%;
+            background: var(--gb-white); border-top: 0.5vw solid var(--gb-black);
+            display: flex; pointer-events: auto; box-sizing: border-box; z-index: 15;
+        }
+
+        #dialogue-box { flex: 1; padding: 2vw; font-size: 1.4vw; line-height: 1.6; cursor: pointer; border-right: 0.5vw solid var(--gb-black); color: var(--gb-black); }
+        
+        #action-menu, #moves-menu { width: 45%; padding: 1vw; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5vw; box-sizing: border-box; align-content: center; }
+
+        .menu-btn {
+            background: var(--gb-white); border: 0.3vw solid var(--gb-black); color: var(--gb-black);
+            border-radius: 0.5vw; font-family: 'Press Start 2P', monospace; font-size: 0.8vw;
+            cursor: pointer; text-transform: uppercase; transition: 0.1s; padding: 0.8vw 0.5vw;
+        }
+        .menu-btn:hover { background: var(--gb-lightgray); transform: scale(1.03); }
+        .menu-btn:active { background: var(--gb-gray); color: white; }
+        .menu-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-highlight { border-color: #ef4444; color: #ef4444; animation: pulseBtn 1s infinite alternate; }
+        @keyframes pulseBtn { from {transform: scale(1);} to {transform: scale(1.05); box-shadow: 0 0 10px #ef4444;} }
+
+        /* --- OVERLAYS & EFFECTS --- */
+        .glitch-effect { animation: guiGlitch 0.2s both infinite; }
+        @keyframes guiGlitch { 0% { filter: invert(0); transform: translate(0); } 50% { filter: invert(1) hue-rotate(90deg); transform: translate(-1vw, 1vw); } 100% { filter: invert(0); transform: translate(0); } }
+
+        /* INTENSE SCREEN SHATTER SHAKE */
+        .shatter-shake { animation: shatterShake 0.05s infinite !important; }
+        @keyframes shatterShake { 
+            0% { transform: translate(2vw, 2vw) rotate(1deg); filter: invert(1); }
+            25% { transform: translate(-2vw, -2vw) rotate(-1deg); filter: invert(0); }
+            50% { transform: translate(2vw, -2vw) rotate(1deg); filter: sepia(1) hue-rotate(300deg) saturate(5); }
+            75% { transform: translate(-2vw, 2vw) rotate(-1deg); filter: invert(1); }
+            100% { transform: translate(0, 0) rotate(0); filter: invert(0); }
+        }
+
+        #flash-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: white; z-index: 44; opacity: 0; pointer-events: none; transition: opacity 0.1s; }
+
+        #cutscene-layer, #clash-layer { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 40; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.85); pointer-events: auto; }
+        .cinematic-text { color: white; font-size: 4vw; text-shadow: 0.5vw 0.5vw 0 #ef4444; animation: cinematicSlide 0.5s ease-out forwards; text-align: center; line-height: 1.2; }
+        @keyframes cinematicSlide { 0% { transform: scale(3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        #clash-bar-container { width: 80%; height: 4vw; background: #333; border: 0.5vw solid white; margin-top: 2vw; box-shadow: 0 0 2vw #3b82f6; }
+        #clash-bar-fill { height: 100%; width: 50%; background: #3b82f6; transition: width 0.1s; }
+        .mash-btn { margin-top: 3vw; padding: 2vw 4vw; font-size: 3vw; background: #ef4444; color: white; border: 0.5vw solid white; cursor: pointer; font-family: 'Press Start 2P'; border-radius: 1vw; box-shadow: 0 1vw 0 #991b1b; transition: 0.1s; }
+        .mash-btn:active { transform: translateY(1vw); box-shadow: 0 0 0 #991b1b; }
+
+        /* --- SYSTEM SCREENS (LOOT, GAMEOVER) --- */
+        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; pointer-events: auto; z-index: 50; background: var(--gb-white); }
+        h1 { font-size: 4vw; color: var(--gb-black); margin-bottom: 1vw; text-shadow: 0.4vw 0.4vw 0 var(--gb-lightgray); }
+        h2 { font-size: 1.5vw; color: var(--gb-gray); margin-bottom: 3vw; line-height: 1.5; }
+        .big-btn { padding: 1.5vw 3vw; font-size: 1.5vw; background: var(--gb-black); color: var(--gb-white); border: 0.5vw solid var(--gb-gray); cursor: pointer; font-family: 'Press Start 2P'; margin-bottom: 1vw; width: 75%; transition: 0.2s; }
+        .big-btn:hover { background: var(--gb-gray); transform: scale(1.05); }
+
+        /* Loot Cards */
+        #loot-container { display: flex; gap: 1vw; width: 95%; justify-content: center; margin-bottom: 2vw; }
+        .loot-card {
+            background: var(--gb-black); color: white; border: 0.4vw solid var(--gb-gray); border-radius: 1vw;
+            width: 32%; padding: 1.5vw 1vw; display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; transition: 0.2s; box-sizing: border-box; position: relative; overflow: hidden;
+        }
+        .loot-card::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%); opacity:0; transition: 0.3s; }
+        .loot-card:hover::before { opacity: 1; }
+        .loot-card:hover { transform: translateY(-1vw) scale(1.05); border-color: white; box-shadow: 0 1vw 3vw rgba(0,0,0,0.8); z-index: 10; }
+        .loot-title { font-size: 1.2vw; color: #facc15; margin-bottom: 1vw; text-align: center; height: 3vw; line-height: 1.5vw; display: flex; align-items: center; justify-content: center; width: 100%; }
+        .loot-desc { font-size: 0.8vw; color: #cbd5e1; text-align: center; line-height: 1.4; }
+        .loot-type { font-size: 0.7vw; padding: 0.5vw; border-radius: 0.3vw; margin-top: 1vw; background: #333; }
+        
+        #replace-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1vw; width: 80%; margin-bottom: 2vw; }
+
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+<div id="game-wrapper">
+    <canvas id="gameCanvas" width="240" height="160"></canvas>
+    <canvas id="shatterCanvas" width="900" height="600"></canvas>
+    <div id="flash-overlay"></div>
+
+    <div id="ui-layer">
+        <div id="floor-indicator" class="hidden">TOWER FLOOR: <span id="floor-num">1</span></div>
+
+        <div id="battle-ui" class="hidden">
+            <div id="enemy-hud" class="hud-box">
+                <div class="hud-name" id="e-name">Enemy</div>
+                <div class="hud-lv" id="e-lv">Lv1</div>
+                <div class="hp-container">
+                    <span class="hp-label">HP</span>
+                    <div class="hp-bar-bg"><div class="hp-bar-fill" id="e-hp-bar"></div></div>
+                </div>
+            </div>
+
+            <div id="player-hud" class="hud-box">
+                <div class="hud-name">GANGY</div>
+                <div class="hud-lv" id="p-lv">Lv1</div>
+                <div class="hp-container">
+                    <span class="hp-label">HP</span>
+                    <div class="hp-bar-bg"><div class="hp-bar-fill" id="p-hp-bar"></div></div>
+                </div>
+                <div class="hp-container" style="margin-bottom:0.2vw;">
+                    <span class="hp-label" style="color:#a855f7;">DOM</span>
+                    <div class="hp-bar-bg" style="background:#333;"><div class="hp-bar-fill" id="p-domain-bar" style="background:#a855f7; width:0%;"></div></div>
+                </div>
+                <div class="hp-text" id="p-hp-text">100/100</div>
+            </div>
+
+            <div id="bottom-panel">
+                <div id="dialogue-box" onclick="advanceText()">
+                    <span id="dialogue-text"></span><span id="dialogue-arrow" class="blink hidden">▼</span>
+                </div>
+                
+                <div id="action-menu" class="hidden">
+                    <button class="menu-btn" onclick="openMoves()">MOVES</button>
+                    <button class="menu-btn" id="btn-domain" onclick="handleAction('domain')" style="color:#a855f7;" disabled>DOMAIN (0/5)</button>
+                    <button class="menu-btn" id="btn-heal" onclick="handleAction('heal')">HEAL</button>
+                    <button class="menu-btn" id="btn-ultimate" onclick="handleAction('ultimate')" style="color:#ef4444; font-weight:bold;">ULTIMATE</button>
+                </div>
+
+                <div id="moves-menu" class="hidden"></div>
+            </div>
+        </div>
+
+        <div id="cutscene-layer" class="hidden"><h1 id="cutscene-text" class="cinematic-text">DOMAIN EXPANSION</h1></div>
+        <div id="clash-layer" class="hidden">
+            <h1 style="color:white; font-size:3vw; text-shadow: none;">BEAM CLASH!</h1>
+            <div id="clash-bar-container"><div id="clash-bar-fill"></div></div>
+            <button class="mash-btn" onclick="mashClash()">MASH CLICK!</button>
+        </div>
+
+        <!-- System Screens -->
+        <div id="start-screen" class="full-screen">
+            <h1 style="font-size: 5vw; color: #ef4444;">ANIME TOWER</h1>
+            <h2>Climb infinitely.<br>Collect hundreds of moves.<br>Shatter your limits.</h2>
+            <button class="big-btn" onclick="startGame()">ENTER TOWER</button>
+        </div>
+
+        <div id="loot-screen" class="full-screen hidden" style="background:var(--gb-black); color:white;">
+            <h1 style="color:white; text-shadow:none; font-size:3vw; margin-top: 1vw;">FLOOR CLEARED!</h1>
+            <h2 style="color:#a8a8a8; margin-bottom: 2vw; font-size: 1vw;">Select 1 new technique to learn:</h2>
+            <div id="loot-container"></div>
+            <button class="big-btn" style="background:#333; width: 40%; font-size: 1vw; padding: 1vw;" onclick="skipLoot()">SKIP</button>
+        </div>
+
+        <div id="replace-screen" class="full-screen hidden" style="background:#1e1b4b; color:white;">
+            <h1 style="color:white; text-shadow:none; font-size:2.5vw;">MOVE SLOTS FULL</h1>
+            <h2 style="color:#a5b4fc; margin-bottom: 2vw;" id="replace-prompt">Choose a move to forget:</h2>
+            <div id="replace-grid"></div>
+            <button class="big-btn" style="background:#312e81; width: 40%; font-size: 1vw;" onclick="cancelReplace()">CANCEL</button>
+        </div>
+
+        <div id="game-over-screen" class="full-screen hidden" style="background:#450a0a;">
+            <h1 style="color:#fca5a5; text-shadow:none;">DEFEATED</h1>
+            <h2 style="color:#fecaca;" id="death-stats">You reached Floor X.</h2>
+            <button class="big-btn" style="background:#fca5a5; color:#450a0a;" onclick="location.reload()">TRY AGAIN</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- MASSIVE ANIME MOVE DATABASE (HUNDREDS OF MOVES) ---
+    const ANIME_MOVES = [
+        // Jujutsu Kaisen
+        { name: "BLACK FLASH", power: 3.0, type: "atk", color: "#000000", desc: "A distortion in space. Massive critical damage." },
+        { name: "CLEAVE", power: 1.8, type: "atk", color: "#ef4444", desc: "Adjusts to toughness. High slash damage." },
+        { name: "DISMANTLE", power: 1.4, type: "atk", color: "#f87171", desc: "A fast flying invisible slashing attack." },
+        { name: "TECHNIQUE: RED", power: 2.5, type: "recoil", color: "#ef4444", desc: "Repels with massive force. Recoil damage." },
+        { name: "TECHNIQUE: BLUE", power: 1.6, type: "vampire", color: "#3b82f6", desc: "Attracts and crushes. Heals slightly." },
+        { name: "STRAW DOLL", power: 1.5, type: "atk", color: "#9333ea", desc: "Strikes the soul directly through resonance." },
+        { name: "RATIO 7:3", power: 2.0, type: "atk", color: "#fcd34d", desc: "Forces a critical weak spot on the enemy." },
+        { name: "BOOGIE WOOGIE", power: 1.1, type: "buff", color: "#a3e635", desc: "Swaps positions, confusing enemy. Boosts ATK." },
+        { name: "PIERCING BLOOD", power: 2.2, type: "recoil", color: "#991b1b", desc: "Highly pressurized blood beam. Recoil." },
+        { name: "MAXIMUM METEOR", power: 3.5, type: "atk", color: "#f97316", desc: "Summons a giant flaming meteor." },
+        
+        // Dragon Ball Z/Super
+        { name: "KAMEHAMEHA", power: 1.8, type: "atk", color: "#60a5fa", desc: "The classic concentrated energy wave." },
+        { name: "FINAL FLASH", power: 2.5, type: "atk", color: "#fef08a", desc: "Devastating golden energy blast." },
+        { name: "SPIRIT BOMB", power: 3.8, type: "recoil", color: "#bae6fd", desc: "Gathered energy. High recoil due to charge time." },
+        { name: "DESTRUCTO DISC", power: 2.1, type: "atk", color: "#fde047", desc: "A sharp disc that cuts through anything." },
+        { name: "SPECIAL BEAM", power: 2.3, type: "atk", color: "#a3e635", desc: "Piercing drill of light." },
+        { name: "GALICK GUN", power: 1.7, type: "atk", color: "#c084fc", desc: "Purple energy wave fired from above." },
+        { name: "KAIO-KEN", power: 0, type: "buff", color: "#ef4444", desc: "Multiplies stats. Huge ATK buff." },
+        { name: "DEATH BEAM", power: 1.9, type: "atk", color: "#f43f5e", desc: "A fast, piercing crimson finger beam." },
+        { name: "BIG BANG ATTACK", power: 2.4, type: "atk", color: "#38bdf8", desc: "A massive sphere of ki." },
+        { name: "MASENKO", power: 1.6, type: "atk", color: "#fef08a", desc: "Energy wave fired with hands above head." },
+        { name: "TRI-BEAM", power: 3.0, type: "recoil", color: "#facc15", desc: "Uses life force to attack. Heavy recoil." },
+        
+        // Naruto
+        { name: "RASENGAN", power: 1.7, type: "atk", color: "#93c5fd", desc: "A spinning sphere of concentrated chakra." },
+        { name: "CHIDORI", power: 2.1, type: "recoil", color: "#60a5fa", desc: "Lightning blade. High speed, causes recoil." },
+        { name: "AMATERASU", power: 1.6, type: "vampire", color: "#111111", desc: "Inextinguishable black flames. Drains life." },
+        { name: "SHADOW CLONE", power: 0, type: "buff", color: "#cbd5e1", desc: "Creates clones. Boosts ATK permanently." },
+        { name: "SUSANOO SLASH", power: 2.4, type: "atk", color: "#a855f7", desc: "Massive ethereal blade strike." },
+        { name: "GENTLE FIST", power: 1.4, type: "atk", color: "#e2e8f0", desc: "Targets internal chakra network." },
+        { name: "SHINRA TENSEI", power: 2.6, type: "atk", color: "#a8a29e", desc: "Almighty push. Repels everything." },
+        { name: "KAMUI", power: 2.8, type: "atk", color: "#000000", desc: "Warps the target's body to another dimension." },
+        { name: "SAND COFFIN", power: 1.8, type: "atk", color: "#d97706", desc: "Crushes the enemy with dense sand." },
+        { name: "8 INNER GATES", power: 4.0, type: "recoil", color: "#ef4444", desc: "Breaks limiters. Utterly destroys user's body." },
+
+        // Bleach
+        { name: "GETSUGA TENSHO", power: 1.9, type: "atk", color: "#38bdf8", desc: "A massive crescent energy slash." },
+        { name: "BLACK GETSUGA", power: 2.4, type: "recoil", color: "#991b1b", desc: "Hollow-infused slash. Hurts user." },
+        { name: "CERO", power: 1.7, type: "atk", color: "#ef4444", desc: "A destructive hollow flash." },
+        { name: "SENBONZAKURA", power: 1.5, type: "vampire", color: "#f472b6", desc: "Million cherry blossom blades. Heals slightly." },
+        { name: "SHUNPO", power: 0, type: "buff", color: "#ffffff", desc: "Flash Step. Extreme speed increases ATK." },
+        { name: "GRAN REY CERO", power: 2.8, type: "atk", color: "#3b82f6", desc: "Ultimate Cero mixed with Espada blood." },
+        { name: "MUGETSU", power: 4.5, type: "recoil", color: "#000000", desc: "The final Getsuga. Massive damage and recoil." },
+
+        // One Piece
+        { name: "GUM-GUM PISTOL", power: 1.3, type: "atk", color: "#fca5a5", desc: "Stretching kinetic punch." },
+        { name: "RED HAWK", power: 2.2, type: "atk", color: "#dc2626", desc: "Fiery punch imbued with Armament Haki." },
+        { name: "CONQUEROR HAKI", power: 1.9, type: "atk", color: "#fef08a", desc: "Overwhelms the weak-willed instantly." },
+        { name: "ROOM: SHAMBLES", power: 1.5, type: "vampire", color: "#5eead4", desc: "Rearranges space. Confuses and drains." },
+        { name: "THUNDER BAGUA", power: 2.7, type: "atk", color: "#94a3b8", desc: "Instantaneous devastating club strike." },
+        { name: "DIVINE DEPARTURE", power: 2.9, type: "atk", color: "#ef4444", desc: "A legendary slash from the Pirate King." },
+        { name: "DIABLE JAMBE", power: 1.8, type: "atk", color: "#f97316", desc: "Friction-heated flaming kick." },
+        { name: "3-SWORD STYLE", power: 2.1, type: "atk", color: "#22c55e", desc: "Tornado of slashing blades." },
+        { name: "GEAR SECOND", power: 0, type: "buff", color: "#fda4af", desc: "Pumps blood faster. Massive ATK boost." },
+        { name: "QUAKE PUNCH", power: 3.2, type: "atk", color: "#ffffff", desc: "Shatters the very air. Causes tremors." },
+
+        // Demon Slayer
+        { name: "WATER WHEEL", power: 1.4, type: "atk", color: "#3b82f6", desc: "Spinning liquid slash." },
+        { name: "DEAD CALM", power: 0, type: "buff", color: "#1e3a8a", desc: "Absolute focus. Increases ATK greatly." },
+        { name: "HINOKAMI KAGURA", power: 2.5, type: "recoil", color: "#f97316", desc: "Dance of the Fire God. Burns user." },
+        { name: "THUNDERCLAP", power: 2.2, type: "atk", color: "#fde047", desc: "Godlike speed strike from the sheath." },
+        { name: "FLAME TIGER", power: 2.3, type: "atk", color: "#ef4444", desc: "A fiery aura taking the shape of a tiger." },
+        { name: "BLOOD DEMON ART", power: 1.8, type: "vampire", color: "#ec4899", desc: "Demonic magic that steals life." },
+
+        // Hunter x Hunter
+        { name: "JAJANKEN ROCK", power: 2.6, type: "atk", color: "#f97316", desc: "Massive concentrated aura punch." },
+        { name: "GODSPEED", power: 0, type: "buff", color: "#fef08a", desc: "Electric reflexes. Boosts ATK and speed." },
+        { name: "BUNGEE GUM", power: 1.3, type: "vampire", color: "#ec4899", desc: "Has properties of rubber and gum. Heals." },
+        { name: "100-TYPE GUANYIN", power: 3.5, type: "atk", color: "#fde047", desc: "Unavoidable golden palm strike." },
+        { name: "JUDGMENT CHAIN", power: 2.5, type: "atk", color: "#9ca3af", desc: "Wraps around the heart." },
+
+        // My Hero Academia
+        { name: "DETROIT SMASH", power: 2.4, type: "recoil", color: "#10b981", desc: "100% power! Breaks user's bones." },
+        { name: "PROMINENCE BURN", power: 2.6, type: "atk", color: "#ea580c", desc: "Incinerating heat ray of ultimate fire." },
+        { name: "HOWITZER IMPACT", power: 2.1, type: "atk", color: "#f97316", desc: "A massive spinning explosion." },
+        { name: "DECAY", power: 3.0, type: "atk", color: "#52525b", desc: "Turns everything touched to dust." },
+
+        // JoJo's Bizarre Adventure
+        { name: "ORA ORA RUSH", power: 2.0, type: "atk", color: "#a855f7", desc: "Furious barrage of stand punches." },
+        { name: "MUDA MUDA", power: 1.9, type: "vampire", color: "#facc15", desc: "Useless! Drains enemy life force." },
+        { name: "TIME STOP", power: 0, type: "buff", color: "#ffffff", desc: "Za Warudo! Freezes time. Free ATK boost." },
+        { name: "EMERALD SPLASH", power: 1.5, type: "atk", color: "#22c55e", desc: "No one can just deflect the Emerald Splash!" },
+        { name: "BITES THE DUST", power: 3.0, type: "recoil", color: "#f472b6", desc: "Blows up time. High recoil." },
+
+        // One Punch Man & Mob Psycho
+        { name: "NORMAL PUNCH", power: 2.5, type: "atk", color: "#ef4444", desc: "Just a normal punch... devastating." },
+        { name: "SERIOUS PUNCH", power: 5.0, type: "recoil", color: "#7f1d1d", desc: "The Earth splits. Massive recoil." },
+        { name: "WATER STREAM", power: 1.8, type: "atk", color: "#38bdf8", desc: "Deflects and strikes fluidly." },
+        { name: "100% PSYCHIC", power: 2.8, type: "atk", color: "#c084fc", desc: "An explosion of repressed emotion." },
+
+        // Black Clover & Fairy Tail
+        { name: "ANTI-MAGIC", power: 2.2, type: "atk", color: "#111111", desc: "Nullifies magic with a giant heavy sword." },
+        { name: "DIMENSION SLASH", power: 2.7, type: "atk", color: "#4b5563", desc: "Cuts through space itself." },
+        { name: "FIRE DRAGON ROAR", power: 1.7, type: "atk", color: "#ef4444", desc: "A massive breath of flames." },
+        { name: "ICE-MAKE LANCE", power: 1.6, type: "atk", color: "#60a5fa", desc: "Fires hundreds of ice spears." }
+    ];
+
+    // Engine Base Setup
+    const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
+    const sCanvas = document.getElementById('shatterCanvas'); const sCtx = sCanvas.getContext('2d');
+    
+    // Engine State
+    let gameState = "START"; 
+    let currentFloor = 1;
+    let textQueue = []; let onQueueEmpty = null;
+    let isTyping = false; let currentText = ""; let typedText = ""; let textCharIndex = 0; let typeSpeed = 2; 
+    let frameCount = 0;
+    let animState = null; let animTimer = 0; let animData = {}; let particles = []; let glassShards = [];
+    let activeDomain = null; 
+    let clashValue = 50; let clashActive = false; let clashTimer = 0;
+
+    // Sprites
+    const colors = { '0':null, '1':'#000', '2':'#fff', '3':'#ef4444', '4':'#3b82f6', '5':'#22c55e', '6':'#eab308', '7':'#fcd34d', '8':'#94a3b8', '9':'#a855f7', 'A':'#f97316', 'B':'#78350f', 'C':'#06b6d4', 'D':'#f43f5e' };
+    const spr_player = ["0000011110000000", "0000144441000000", "0001444444100000", "0014444444410000", "0017777777710000", "0017777777710000", "0001444444100000", "0001122221100000", "0012222222210000", "0122222222221000", "0121222222121000", "0110111111011000", "0000110011000000", "0000110011000000", "0001110011100000", "0000000000000000"];
+    const spr_player_awaken = ["0000222222000000", "0002666666200000", "0026666666620000", "0266666666662000", "0267777777762000", "0267676676762000", "0026666666620000", "0021111111120000", "0211111111112000", "2111111111111200", "2111111111111200", "2110111111011200", "0000110011000000", "0000110011000000", "0001110011100000", "0000000000000000"];
+    const spr_enemies = [
+        ["0000011110000000", "0000199991000000", "0001999999100000", "0001719917100000", "0001721127100000", "0001799997100000", "0000111111000000", "0001133331100000", "0011133331110000", "0110133331011000", "0000111111000000", "0000110011000000", "0000110011000000", "0001110011100000", "0000000000000000", "0000000000000000"],
+        ["0000011110000000", "0001A3333A100000", "0013333333310000", "0017711117710000", "0017721127710000", "0017771177710000", "00011AAAA1100000", "0001A1AA1A100000", "001AA1AA1AA10000", "00101AAAA1010000", "000011AA11000000", "0000110011000000", "0000110011000000", "0001110011100000", "0000000000000000", "0000000000000000"],
+        ["0000111111000000", "0001666666100000", "0016666666610000", "0017711117710000", "00177C11C7710000", "0017777777710000", "0001122221100000", "0001216612100000", "0012216612210000", "0010122221010000", "0000112211000000", "0000110011000000", "0000110011000000", "0001110011100000", "0000000000000000", "0000000000000000"]
+    ];
+
+    // --- GAME DATA ---
+    let player = {
+        name: "GANGY", level: 1, maxHp: 150, hp: 150, atk: 30,
+        domainMeter: 0, vulnerable: false, transformed: false,
+        domain: { name: "INFINITE VOID", color1: "#000000", color2: "#3b0764" },
+        ultimate: { name: "HOLLOW PURPLE", msg: "GANGY unleashes an explosive mass of imaginary mass!" },
+        moves: [
+            { name: "BASIC PUNCH", power: 1.0, type: "atk", color: "#9ca3af", desc: "A standard physical strike." },
+            { name: "KAMEHAMEHA", power: 1.8, type: "atk", color: "#60a5fa", desc: "The classic energy wave." }
+        ]
+    };
+
+    let currentEnemy = null;
+    let pendingLootMove = null;
+
+    let pPos = { x: 30, y: 80 }; let ePos = { x: 150, y: 10 }; 
+    let pOff = { x: 0, y: 0 }; let eOff = { x: 0, y: 0 };
+    let eFlash = false, pFlash = false, eVis = true, pVis = true;
+
+    // --- ENEMY GENERATOR ---
+    function generateEnemy(floor) {
+        const prefixes = ["ROGUE", "CURSED", "ELITE", "CORRUPTED", "DEMON", "SHADOW", "COSMIC", "FALLEN", "AWAKENED", "HAKAI"];
+        const archetypes = ["SHINOBI", "SPIRIT", "SAIYAN", "PIRATE", "HOLLOW", "STAND USER", "HASHIRA", "VILLAIN", "ESPER", "DRAGON"];
+        let name = prefixes[Math.floor(Math.random()*prefixes.length)] + " " + archetypes[Math.floor(Math.random()*archetypes.length)];
+        
+        let hpScale = 80 + (floor * 50);
+        let atkScale = 15 + (floor * 10);
+        
+        let isBoss = (floor % 5 === 0);
+        if (isBoss) { name = "BOSS: " + name; hpScale *= 1.8; atkScale *= 1.3; }
+
+        let pColor = ['#ef4444', '#3b82f6', '#10b981', '#a855f7', '#f59e0b', '#ec4899', '#ffffff'][Math.floor(Math.random()*7)];
+        
+        return {
+            name: name, level: floor, maxHp: Math.floor(hpScale), hp: Math.floor(hpScale), atk: Math.floor(atkScale),
+            sprite: spr_enemies[Math.floor(Math.random() * spr_enemies.length)], color: pColor, 
+            eMove: ["SLICING WAVE", "ENERGY BLAST", "BRUTAL STRIKE", "DARK ORB", "METEOR CRASH"][Math.floor(Math.random()*5)],
+            intro: `Floor ${floor} Guardian appears!`,
+            domain: (isBoss || Math.random() < (floor * 0.05)) ? { name: "MALEVOLENT SHRINE", color1: "#450a0a", color2: "#000" } : null,
+            ultimate: { name: "DEATH BLOW", used: false }
+        };
+    }
+
+    // --- RENDERING & EFFECTS ---
+    function triggerScreenShatter() {
+        // Flash white
+        let flash = document.getElementById('flash-overlay');
+        flash.style.opacity = '1';
+        setTimeout(() => flash.style.opacity = '0', 100);
+
+        // Shake wrapper immensely
+        let wrapper = document.getElementById('game-wrapper');
+        wrapper.classList.add('shatter-shake');
+        setTimeout(() => wrapper.classList.remove('shatter-shake'), 1000);
+
+        // Spawn Canvas Shards
+        glassShards = [];
+        let cx = 450; let cy = 300; // Center of 900x600 canvas
+        for(let i=0; i<40; i++) {
+            let angle = Math.random() * Math.PI * 2;
+            let speed = 5 + Math.random() * 20;
+            let points = [];
+            let numPts = 3 + Math.floor(Math.random()*4);
+            for(let p=0; p<numPts; p++) {
+                points.push({ x: (Math.random()-0.5)*80, y: (Math.random()-0.5)*80 });
+            }
+            glassShards.push({
+                x: cx + (Math.random()-0.5)*100, y: cy + (Math.random()-0.5)*100,
+                vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed,
+                rot: Math.random()*Math.PI*2, vrot: (Math.random()-0.5)*0.5,
+                points: points, life: 60
+            });
+        }
+    }
+
+    function emitParticles(x, y, color, count, speed=2, life=30) {
+        for(let i=0; i<count; i++) particles.push({ x, y, vx: (Math.random()-0.5)*speed*2, vy: (Math.random()-0.5)*speed*2, color, life: life + Math.random()*10, maxLife: life });
+    }
+    function updateParticles() {
+        for(let i = particles.length-1; i>=0; i--) {
+            let p = particles[i]; p.x += p.vx; p.y += p.vy; p.life--;
+            if (p.life <= 0) particles.splice(i, 1);
+        }
+    }
+    function darkenColor(hex, factor) {
+        if(!hex || hex === 'none') return '#000';
+        let r = parseInt(hex.slice(1,3), 16) * factor; let g = parseInt(hex.slice(3,5), 16) * factor; let b = parseInt(hex.slice(5,7), 16) * factor;
+        return `rgb(${Math.floor(r)},${Math.floor(g)},${Math.floor(b)})`;
+    }
+    function drawSprite(arr, x, y, scale=4, flash=false, isTransformed=false, overrideColor=null) {
+        if (!arr) return;
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        for(let r=0; r<16; r++) for(let c=0; c<16; c++) if(arr[r][c] !== '0') ctx.fillRect(x + c*scale + scale, y + r*scale + scale*2, scale, scale);
+        
+        if (isTransformed) { ctx.shadowColor = '#eab308'; ctx.shadowBlur = 15; }
+        for (let r=0; r<16; r++) {
+            for (let c=0; c<16; c++) {
+                let ch = arr[r][c];
+                if (ch !== '0') {
+                    let fill = flash ? '#ffffff' : colors[ch];
+                    if (overrideColor && ch !== '1') fill = overrideColor;
+                    if (!flash && r > 9 && ch !== '1') fill = darkenColor(fill, 0.6);
+                    ctx.fillStyle = fill; ctx.fillRect(x + c*scale, y + r*scale, scale, scale);
+                }
+            }
+        }
+        ctx.shadowBlur = 0;
+    }
+
+    function renderGame() {
+        // Main Game Canvas
+        ctx.clearRect(0, 0, 240, 160);
+        let camX = 0, camY = 0;
+        if (animState === "SHAKE") { camX = (Math.random() - 0.5) * 8; camY = (Math.random() - 0.5) * 8; }
+        ctx.save(); ctx.translate(camX, camY);
+
+        if (activeDomain) {
+            let grad = ctx.createRadialGradient(120, 80, 10, 120, 80, 150 + Math.sin(frameCount*0.05)*20);
+            grad.addColorStop(0, activeDomain.color1); grad.addColorStop(1, activeDomain.color2);
+            ctx.fillStyle = grad; ctx.fillRect(0,0,240,160);
+            if (frameCount%5===0) emitParticles(Math.random()*240, 160, '#ffffff', 1, 0.5, 60);
+        } else {
+            let skyGrad = ctx.createLinearGradient(0,0,0,100);
+            skyGrad.addColorStop(0, '#d1d5db'); skyGrad.addColorStop(1, '#f3f4f6');
+            ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, 240, 100);
+            let floorGrad = ctx.createLinearGradient(0,100,0,160);
+            floorGrad.addColorStop(0, '#9ca3af'); floorGrad.addColorStop(1, '#6b7280');
+            ctx.fillStyle = floorGrad; ctx.fillRect(0, 100, 240, 60);
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            for(let i=0; i<160; i+=10) ctx.fillRect(0, 100 + i, 240, 2);
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath(); ctx.ellipse(180, 75, 45, 12, 0, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(60, 145, 50, 15, 0, 0, Math.PI*2); ctx.fill();
+        }
+
+        if (eVis && currentEnemy) drawSprite(currentEnemy.sprite, ePos.x + eOff.x, ePos.y + eOff.y, 4, eFlash, false, currentEnemy.color);
+        let pSprite = player.transformed ? spr_player_awaken : spr_player;
+        if (pVis) drawSprite(pSprite, pPos.x + pOff.x, pPos.y + pOff.y, 4, pFlash, player.transformed);
+
+        particles.forEach(p => { ctx.fillStyle = p.color; let size = Math.max(1, (p.life/p.maxLife) * 3); ctx.fillRect(p.x, p.y, size, size); });
+
+        if (animState === "BEAM") {
+            ctx.fillStyle = animData.color; ctx.fillRect(animData.x, animData.y, animData.w, animData.h);
+            ctx.fillStyle = '#fff'; ctx.fillRect(animData.x, animData.y + animData.h/4, animData.w, animData.h/2);
+            emitParticles(animData.x + (animData.w > 0 ? animData.w : 0), animData.y + animData.h/2, animData.color, 3, 5, 15);
+        }
+        ctx.restore();
+
+        // Shatter Canvas Rendering
+        sCtx.clearRect(0,0,900,600);
+        if (glassShards.length > 0) {
+            for(let i = glassShards.length-1; i>=0; i--) {
+                let s = glassShards[i];
+                s.x += s.vx; s.y += s.vy; s.rot += s.vrot; s.life--;
+                
+                sCtx.save();
+                sCtx.translate(s.x, s.y); sCtx.rotate(s.rot);
+                sCtx.beginPath();
+                sCtx.moveTo(s.points[0].x, s.points[0].y);
+                for(let j=1; j<s.points.length; j++) sCtx.lineTo(s.points[j].x, s.points[j].y);
+                sCtx.closePath();
+                
+                sCtx.fillStyle = `rgba(255, 255, 255, ${s.life/60})`;
+                sCtx.fill(); sCtx.strokeStyle = `rgba(100, 200, 255, ${(s.life/60)*0.5})`;
+                sCtx.lineWidth = 2; sCtx.stroke();
+                sCtx.restore();
+
+                if (s.life <= 0) glassShards.splice(i, 1);
+            }
+        }
+    }
+
+    // --- UI LOGIC ---
+    function updateHUD() {
+        if(!currentEnemy) return;
+        document.getElementById('floor-num').innerText = currentFloor;
+        document.getElementById('e-name').innerText = currentEnemy.name;
+        document.getElementById('e-lv').innerText = `Lv${currentEnemy.level}`;
+        document.getElementById('e-hp-bar').style.width = Math.max(0, (currentEnemy.hp / currentEnemy.maxHp) * 100) + '%';
+        
+        document.getElementById('p-lv').innerText = `Lv${player.level}`;
+        document.getElementById('p-hp-text').innerText = `${Math.floor(player.hp)}/${player.maxHp}`;
+        document.getElementById('p-hp-bar').style.width = Math.max(0, (player.hp / player.maxHp) * 100) + '%';
+
+        let dBar = document.getElementById('p-domain-bar'); dBar.style.width = (player.domainMeter / 5) * 100 + '%';
+        let btnDomain = document.getElementById('btn-domain');
+        if (player.domainMeter >= 5) { btnDomain.disabled = false; btnDomain.innerText = "DOMAIN!"; btnDomain.classList.add('btn-highlight'); } 
+        else { btnDomain.disabled = true; btnDomain.innerText = `DOM (${player.domainMeter}/5)`; btnDomain.classList.remove('btn-highlight'); }
+
+        let ultBtn = document.getElementById('btn-ultimate'); let healBtn = document.getElementById('btn-heal');
+        if (player.hp <= player.maxHp * 0.5) { 
+            ultBtn.disabled = false; ultBtn.innerText = "ULTIMATE"; 
+            if(!player.transformed) { healBtn.innerText = "AWAKEN"; healBtn.style.color = "#ef4444"; healBtn.classList.add('btn-highlight'); }
+        } else { 
+            ultBtn.disabled = true; ultBtn.innerText = "ULT(50%)"; 
+            if(!player.transformed) { healBtn.innerText = "HEAL"; healBtn.style.color = ""; healBtn.classList.remove('btn-highlight'); }
+        }
+
+        let pHud = document.getElementById('player-hud');
+        if (player.vulnerable) { pHud.classList.add('vulnerable-shake'); document.getElementById('p-hp-text').innerText += " (VULNERABLE!)"; } 
+        else pHud.classList.remove('vulnerable-shake');
+    }
+
+    function queueText(text) { textQueue.push(text); }
+    function processTextQueue() {
+        if (textQueue.length > 0) {
+            gameState = "TEXT"; currentText = textQueue.shift(); typedText = ""; textCharIndex = 0; isTyping = true;
+            document.getElementById('dialogue-box').classList.remove('hidden');
+            document.getElementById('action-menu').classList.add('hidden');
+            document.getElementById('moves-menu').classList.add('hidden');
+            document.getElementById('dialogue-arrow').classList.add('hidden');
+        } else {
+            if (onQueueEmpty) { let cb = onQueueEmpty; onQueueEmpty = null; cb(); } 
+            else showActionMenu();
+        }
+    }
+
+    window.advanceText = function() {
+        if (gameState !== "TEXT" && gameState !== "INTRO") return;
+        if (isTyping) {
+            typedText = currentText; document.getElementById('dialogue-text').innerText = typedText;
+            isTyping = false; textCharIndex = currentText.length; document.getElementById('dialogue-arrow').classList.remove('hidden');
+        } else {
+            if (gameState === "INTRO") { gameState = "BATTLE_WAIT"; queueText(`FIGHT!`); processTextQueue(); } 
+            else processTextQueue();
+        }
+    };
+
+    function showActionMenu() {
+        gameState = "MENU";
+        document.getElementById('dialogue-text').innerText = `What will\n${player.name} do?`;
+        document.getElementById('dialogue-arrow').classList.add('hidden');
+        document.getElementById('action-menu').classList.remove('hidden');
+        document.getElementById('moves-menu').classList.add('hidden');
+        updateHUD();
+    }
+
+    window.openMoves = function() {
+        document.getElementById('action-menu').classList.add('hidden');
+        let movesMenu = document.getElementById('moves-menu'); movesMenu.innerHTML = '';
+        player.moves.forEach((m, i) => {
+            let btn = document.createElement('button'); btn.className = 'menu-btn';
+            btn.innerHTML = `${m.name}`; btn.style.color = m.color;
+            btn.onclick = () => useMove(i); movesMenu.appendChild(btn);
+        });
+        let backBtn = document.createElement('button'); backBtn.className = 'menu-btn'; 
+        if(player.moves.length % 2 !== 0) backBtn.style.gridColumn = 'span 2'; 
+        backBtn.innerText = 'BACK'; backBtn.onclick = () => { movesMenu.classList.add('hidden'); document.getElementById('action-menu').classList.remove('hidden'); };
+        movesMenu.appendChild(backBtn); movesMenu.classList.remove('hidden');
+    }
+
+    // --- BATTLE LOGIC ---
+    window.startGame = function() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('battle-ui').classList.remove('hidden');
+        document.getElementById('floor-indicator').classList.remove('hidden');
+        startEncounter();
+    }
+
+    function startEncounter() {
+        currentEnemy = generateEnemy(currentFloor);
+        activeDomain = null; eVis = true; pVis = true; eOff = {x:0, y:0}; pOff = {x:0, y:0};
+        updateHUD();
+        gameState = "INTRO"; currentText = currentEnemy.intro;
+        typedText = ""; textCharIndex = 0; isTyping = true;
+        document.getElementById('dialogue-box').classList.remove('hidden');
+        document.getElementById('action-menu').classList.add('hidden');
+        document.getElementById('moves-menu').classList.add('hidden');
+    }
+
+    window.handleAction = function(act) {
+        if (gameState !== "MENU") return;
+        document.getElementById('action-menu').classList.add('hidden');
+        
+        if (act === 'heal') {
+            if (player.hp <= player.maxHp * 0.5 && !player.transformed) {
+                document.getElementById('game-wrapper').classList.add('glitch-effect'); setTimeout(() => document.getElementById('game-wrapper').classList.remove('glitch-effect'), 1000);
+                document.body.className = 'transformed-ui'; player.transformed = true; player.atk = Math.floor(player.atk * 1.5);
+                triggerScreenShatter();
+                playAnim('PLAYER_HEAL', () => { player.hp = player.maxHp; updateHUD(); queueText(`${player.name} AWAKENED! Stats drastically boosted!`); endPlayerTurn(); }, '#fca5a5');
+            } else {
+                queueText(`${player.name} used PLOT ARMOR!`);
+                onQueueEmpty = () => { playAnim('PLAYER_HEAL', () => { player.hp = Math.min(player.maxHp, player.hp + player.maxHp*0.4); updateHUD(); queueText(`Recovered HP!`); endPlayerTurn(); }, '#22c55e'); };
+                processTextQueue();
+            }
+        } 
+        else if (act === 'domain') {
+            document.getElementById('game-wrapper').classList.add('glitch-effect'); setTimeout(() => document.getElementById('game-wrapper').classList.remove('glitch-effect'), 500);
+            triggerCutscene(`${player.name}:\nDOMAIN EXPANSION!\n${player.domain.name}`, () => {
+                activeDomain = { owner: 'player', color1: player.domain.color1, color2: player.domain.color2, turnsLeft: 3 }; player.domainMeter = 0; document.body.className = 'domain-ui';
+                emitParticles(120, 80, '#ffffff', 50, 5, 60); queueText(`The battlefield shifted! You get 3 TURNS of massive damage!`); endPlayerTurn();
+            });
+        } 
+        else if (act === 'ultimate') {
+            if (player.hp > player.maxHp * 0.5) return;
+            document.getElementById('game-wrapper').classList.add('glitch-effect'); setTimeout(() => document.getElementById('game-wrapper').classList.remove('glitch-effect'), 400);
+            triggerCutscene(`ULTIMATE:\n${player.ultimate.name}!`, () => {
+                queueText(player.ultimate.msg);
+                onQueueEmpty = () => {
+                    if (currentEnemy.hp <= currentEnemy.maxHp * 0.5 && !currentEnemy.ultimate.used) {
+                        currentEnemy.ultimate.used = true; triggerCutscene(`ENEMY COUNTERS:\n${currentEnemy.ultimate.name}!`, startClash);
+                    } else {
+                        playAnim('PLAYER_ULTIMATE', () => {
+                            triggerScreenShatter();
+                            let dmg = getDamage(player.atk, 5.0, 'player'); currentEnemy.hp = Math.max(0, currentEnemy.hp - dmg); updateHUD();
+                            queueText(`Devastating Hit! ${dmg} DMG!`); endPlayerTurn();
+                        });
+                    }
+                };
+                processTextQueue();
+            });
+        }
+    }
+
+    window.useMove = function(idx) {
+        let m = player.moves[idx];
+        document.getElementById('action-menu').classList.add('hidden'); document.getElementById('moves-menu').classList.add('hidden');
+        queueText(`${player.name} used ${m.name}!`);
+
+        onQueueEmpty = () => {
+            playAnim('PLAYER_ATTACK', () => {
+                if(m.type === 'buff') {
+                    player.atk += Math.floor(player.atk * 0.25); queueText(`ATK sharply rose!`);
+                } else if(m.type === 'heal_full') {
+                    player.hp = player.maxHp; queueText(`HP fully restored!`);
+                } else {
+                    let dmg = getDamage(player.atk, m.power, 'player');
+                    currentEnemy.hp = Math.max(0, currentEnemy.hp - dmg); queueText(`Dealt ${dmg} damage!`);
+                    if (m.type === 'recoil') { let r = Math.floor(dmg * 0.2); player.hp = Math.max(0, player.hp - r); queueText(`Hit with recoil damage!`); }
+                    if (m.type === 'vampire') { let v = Math.floor(dmg * 0.4); player.hp = Math.min(player.maxHp, player.hp + v); queueText(`Drained ${v} HP!`); }
+                }
+                updateHUD(); endPlayerTurn();
+            }, m.color);
+        };
+        processTextQueue();
+    }
+
+    function getDamage(base, mult, attacker) {
+        let d = Math.floor(base * mult * (0.85 + Math.random()*0.3));
+        if (activeDomain && activeDomain.owner === attacker) d = Math.floor(d * 1.5);
+        if (attacker === 'enemy' && player.vulnerable) d = Math.floor(d * 2.0);
+        if (attacker === 'player' && player.vulnerable) d = Math.floor(d * 0.5);
+        return d;
+    }
+
+    function endPlayerTurn() {
+        onQueueEmpty = () => {
+            if (currentEnemy.hp <= 0) { handleVictory(); return; }
+            if (player.hp <= 0) { handleDefeat(); return; }
+            player.vulnerable = false; 
+
+            if (activeDomain && activeDomain.owner === 'player') {
+                activeDomain.turnsLeft--;
+                if (activeDomain.turnsLeft > 0) {
+                    queueText(`DOMAIN ACTIVE! (${activeDomain.turnsLeft} turns left)`);
+                    onQueueEmpty = showActionMenu; processTextQueue();
+                } else {
+                    document.getElementById('game-wrapper').classList.add('glitch-effect'); setTimeout(() => document.getElementById('game-wrapper').classList.remove('glitch-effect'), 500);
+                    queueText(`DOMAIN COLLAPSED! ${player.name} is VULNERABLE!`); activeDomain = null; player.vulnerable = true;
+                    document.body.className = player.transformed ? 'transformed-ui' : ''; 
+                    onQueueEmpty = executeEnemyTurn; processTextQueue();
+                }
+            } else { player.domainMeter = Math.min(5, player.domainMeter + 1); executeEnemyTurn(); }
+        };
+        processTextQueue();
+    }
+
+    function executeEnemyTurn() {
+        let e = currentEnemy;
+        if (e.hp <= e.maxHp * 0.5 && !e.ultimate.used) {
+            e.ultimate.used = true;
+            triggerCutscene(`${e.name}:\n${e.ultimate.name}!`, () => {
+                queueText(`${e.name} unleashes their Ultimate Attack!`);
+                onQueueEmpty = () => {
+                    if (player.hp <= player.maxHp * 0.5) {
+                        queueText(`Counter with your ULTIMATE?`);
+                        onQueueEmpty = () => {
+                            document.getElementById('dialogue-text').innerText = "COUNTER?";
+                            document.getElementById('action-menu').innerHTML = `<button class="menu-btn" style="color:red; grid-column: span 2;" onclick="acceptClash()">YES (ULTIMATE)</button><button class="menu-btn" style="grid-column: span 2;" onclick="declineClash()">NO (DEFEND)</button>`;
+                            document.getElementById('action-menu').classList.remove('hidden'); gameState = "MENU";
+                        }; processTextQueue();
+                    } else {
+                        playAnim('ENEMY_ULTIMATE', () => {
+                            triggerScreenShatter();
+                            let dmg = getDamage(e.atk, 5.0, 'enemy'); player.hp = Math.max(0, player.hp - dmg); updateHUD();
+                            queueText(`You couldn't counter! Took ${dmg} DMG!`);
+                            onQueueEmpty = () => { if(player.hp<=0) handleDefeat(); else showActionMenu(); }; processTextQueue();
+                        });
+                    }
+                }; processTextQueue();
+            }); return;
+        }
+
+        if (!activeDomain && e.domain) {
+            triggerCutscene(`${e.name}: DOMAIN EXPANSION!\n${e.domain.name}`, () => {
+                activeDomain = { owner: 'enemy', color1: e.domain.color1, color2: e.domain.color2, turnsLeft: 99 };
+                emitParticles(120, 80, '#000000', 50, 5, 60); queueText(`The enemy expanded their Domain!`); e.domain = null;
+                onQueueEmpty = showActionMenu; processTextQueue();
+            }); return;
+        }
+
+        queueText(`--- ENEMY TURN ---`); queueText(`${e.name} used ${e.eMove}!`);
+        onQueueEmpty = () => {
+            playAnim('ENEMY_ATTACK', () => {
+                let dmg = getDamage(e.atk, 1.2, 'enemy'); player.hp = Math.max(0, player.hp - dmg); updateHUD();
+                queueText(`Took ${dmg} damage!`);
+                onQueueEmpty = () => { if(player.hp<=0) handleDefeat(); else showActionMenu(); }; processTextQueue();
+            }, e.color);
+        }; processTextQueue();
+    }
+
+    // --- BEAM CLASH ---
+    window.acceptClash = function() {
+        document.getElementById('action-menu').classList.add('hidden'); resetActionMenu();
+        document.getElementById('game-wrapper').classList.add('glitch-effect'); setTimeout(() => document.getElementById('game-wrapper').classList.remove('glitch-effect'), 500);
+        triggerCutscene(`${player.name}:\n${player.ultimate.name}!`, startClash);
+    }
+    window.declineClash = function() {
+        document.getElementById('action-menu').classList.add('hidden'); resetActionMenu();
+        playAnim('ENEMY_ULTIMATE', () => {
+            triggerScreenShatter();
+            let dmg = getDamage(currentEnemy.atk, 3.5, 'enemy'); player.hp = Math.max(0, player.hp - dmg); updateHUD();
+            queueText(`Guarded! But still took ${dmg} DMG!`);
+            onQueueEmpty = () => { if(player.hp<=0) handleDefeat(); else showActionMenu(); }; processTextQueue();
+        });
+    }
+    function resetActionMenu() { document.getElementById('action-menu').innerHTML = `<button class="menu-btn" onclick="openMoves()">MOVES</button><button class="menu-btn" id="btn-domain" onclick="handleAction('domain')" style="color:#a855f7;">DOMAIN</button><button class="menu-btn" id="btn-heal" onclick="handleAction('heal')">HEAL</button><button class="menu-btn" id="btn-ultimate" onclick="handleAction('ultimate')" style="color:#ef4444; font-weight:bold;">ULTIMATE</button>`; }
+    function startClash() { gameState = "CLASH"; clashActive = true; clashValue = 50; clashTimer = 100; document.getElementById('clash-layer').classList.remove('hidden'); updateClashUI(); }
+    window.mashClash = function() { if(!clashActive) return; clashValue += 6; emitParticles(120, 80, '#3b82f6', 2, 8, 20); updateClashUI(); }
+    function updateClashUI() { let bar = document.getElementById('clash-bar-fill'); bar.style.width = Math.max(0, Math.min(100, clashValue)) + '%'; bar.style.backgroundColor = clashValue > 50 ? '#3b82f6' : '#ef4444'; }
+    function resolveClash() {
+        clashActive = false; document.getElementById('clash-layer').classList.add('hidden');
+        if (clashValue >= 100 || (clashValue > 50 && clashTimer <= 0)) {
+            playAnim('PLAYER_ULTIMATE', () => {
+                triggerScreenShatter();
+                let dmg = getDamage(player.atk, 6.0, 'player'); currentEnemy.hp = Math.max(0, currentEnemy.hp - dmg); updateHUD();
+                queueText(`CLASH WON! You overwhelmed ${currentEnemy.name}! Dealt ${dmg} DMG!`); endPlayerTurn();
+            });
+        } else {
+            playAnim('ENEMY_ULTIMATE', () => {
+                triggerScreenShatter();
+                let dmg = getDamage(currentEnemy.atk, 6.0, 'enemy'); player.hp = Math.max(0, player.hp - dmg); updateHUD();
+                queueText(`CLASH LOST! Overpowered! Took ${dmg} DMG!`);
+                onQueueEmpty = () => { if(player.hp<=0) handleDefeat(); else showActionMenu(); }; processTextQueue();
+            });
+        }
+    }
+
+    // --- ANIMATIONS & CUTSCENES ---
+    function triggerCutscene(text, callback) {
+        gameState = "CUTSCENE"; let layer = document.getElementById('cutscene-layer'); let textEl = document.getElementById('cutscene-text');
+        textEl.innerText = text; textEl.style.animation = 'none'; textEl.offsetHeight; textEl.style.animation = null;
+        layer.classList.remove('hidden'); setTimeout(() => { layer.classList.add('hidden'); callback(); }, 1500);
+    }
+
+    function playAnim(type, callback, color = '#ffffff') {
+        animState = type; animTimer = 0; animData.color = color;
+        let int = setInterval(() => {
+            animTimer++;
+            if (type === 'PLAYER_ATTACK') {
+                if(animTimer===1) pOff.x = 10; 
+                if(animTimer===10) { pOff.x=0; animState="BEAM"; animData={x:80,y:90,w:0,h:12,color}; }
+                if(animTimer>10 && animTimer<20) animData.w += 15;
+                if(animTimer===20) { animState="SHAKE"; eFlash=true; emitParticles(150,30,color,15,5,20); }
+                if(animTimer===35) { eFlash=false; animState=null; clearInterval(int); callback(); }
+            }
+            else if (type === 'ENEMY_ATTACK') {
+                if(animTimer===1) eOff.x = -10; 
+                if(animTimer===10) { eOff.x=0; animState="BEAM"; animData={x:150,y:30,w:0,h:18,color}; }
+                if(animTimer>10 && animTimer<20) { animData.w -= 15; animData.x -= 15; }
+                if(animTimer===20) { animState="SHAKE"; pFlash=true; emitParticles(30,80,color,15,5,20); }
+                if(animTimer===35) { pFlash=false; animState=null; clearInterval(int); callback(); }
+            }
+            else if (type === 'PLAYER_HEAL') {
+                if(animTimer%5===0) emitParticles(pPos.x+16, pPos.y+16, color, 4, 3, 20);
+                if(animTimer===30) { animState=null; clearInterval(int); callback(); }
+            }
+            else if (type === 'PLAYER_ULTIMATE') {
+                if(animTimer===1) { animState="SHAKE"; emitParticles(pPos.x+16, pPos.y+16, '#3b82f6', 40, 10, 50); }
+                if(animTimer===20) { animState="BEAM"; animData={x:50,y:-20,w:0,h:200,color:'#a855f7'}; document.getElementById('game-wrapper').style.filter = "invert(1)"; } 
+                if(animTimer>20 && animTimer<35) animData.w += 20;
+                if(animTimer===35) { animState="SHAKE"; eFlash=true; emitParticles(150,30,'#a855f7',50,15,40); document.getElementById('game-wrapper').style.filter = "none"; }
+                if(animTimer===65) { eFlash=false; animState=null; clearInterval(int); callback(); }
+            }
+            else if (type === 'ENEMY_ULTIMATE') {
+                let ec = currentEnemy.color;
+                if(animTimer===1) { animState="SHAKE"; emitParticles(ePos.x+16, ePos.y+16, ec, 40, 10, 50); }
+                if(animTimer===20) { animState="BEAM"; animData={x:190,y:-20,w:0,h:200,color:ec}; document.getElementById('game-wrapper').style.filter = "invert(1) hue-rotate(180deg)"; } 
+                if(animTimer>20 && animTimer<35) { animData.w -= 20; animData.x -= 20; }
+                if(animTimer===35) { animState="SHAKE"; pFlash=true; emitParticles(30,80,ec,50,15,40); document.getElementById('game-wrapper').style.filter = "none"; }
+                if(animTimer===65) { pFlash=false; animState=null; clearInterval(int); callback(); }
+            }
+            else if (type === 'ENEMY_FAINT') {
+                eOff.y += 4; emitParticles(ePos.x+16, ePos.y+eOff.y, '#ffffff', 2, 1, 10);
+                if (animTimer === 30) { eVis = false; animState=null; clearInterval(int); callback(); }
+            }
+        }, 1000/60); 
+    }
+
+    // --- PROGRESSION & LOOT ---
+    function handleVictory() {
+        playAnim('ENEMY_FAINT', () => {
+            queueText(`You obliterated ${currentEnemy.name}!`);
+            queueText(`${player.name} grew to level ${player.level + 1}!`);
+            onQueueEmpty = () => { showLootScreen(); };
+            processTextQueue();
+        });
+    }
+
+    function handleDefeat() {
+        queueText(`${player.name} was overwhelmed...`);
+        onQueueEmpty = () => { 
+            document.getElementById('death-stats').innerText = `You reached TOWER FLOOR ${currentFloor}.`;
+            document.getElementById('game-over-screen').classList.remove('hidden'); gameState = "GAMEOVER"; 
+        };
+        processTextQueue();
+    }
+
+    function showLootScreen() {
+        gameState = "LOOT"; document.getElementById('loot-screen').classList.remove('hidden');
+        let container = document.getElementById('loot-container'); container.innerHTML = '';
+        
+        let rewards = [];
+        // Generate 3 totally random anime moves!
+        while(rewards.length < 3) {
+            let randMove = ANIME_MOVES[Math.floor(Math.random() * ANIME_MOVES.length)];
+            // Don't generate duplicates on the same screen
+            if(!rewards.find(r => r.move.name === randMove.name)) {
+                rewards.push({type: 'move', move: randMove, name: randMove.name, desc: randMove.desc, color: randMove.color});
+            }
+        }
+
+        rewards.forEach(r => {
+            let card = document.createElement('div'); card.className = 'loot-card';
+            card.innerHTML = `<div class="loot-title" style="color:${r.color}">${r.name}</div><div class="loot-desc">${r.desc}</div><div class="loot-type">${r.move.type.toUpperCase()}</div>`;
+            card.onclick = () => claimLoot(r);
+            container.appendChild(card);
+        });
+    }
+
+    window.skipLoot = function() {
+        document.getElementById('loot-screen').classList.add('hidden'); advanceFloor();
+    }
+
+    function claimLoot(reward) {
+        if (player.moves.find(m => m.name === reward.move.name)) return alert("You already know this move!");
+        
+        if (player.moves.length >= 4) {
+            pendingLootMove = reward.move;
+            document.getElementById('loot-screen').classList.add('hidden');
+            showReplaceScreen();
+        } else {
+            player.moves.push(reward.move);
+            document.getElementById('loot-screen').classList.add('hidden'); advanceFloor();
+        }
+    }
+
+    function showReplaceScreen() {
+        gameState = "REPLACE"; document.getElementById('replace-screen').classList.remove('hidden');
+        document.getElementById('replace-prompt').innerText = `Learn [${pendingLootMove.name}]. Which move will you forget?`;
+        let grid = document.getElementById('replace-grid'); grid.innerHTML = '';
+        
+        player.moves.forEach((m, i) => {
+            let btn = document.createElement('button'); btn.className = 'big-btn'; btn.style.width = '100%'; btn.style.fontSize = '1.2vw';
+            btn.innerHTML = `<span style="color:${m.color}">${m.name}</span>`;
+            btn.onclick = () => { player.moves[i] = pendingLootMove; document.getElementById('replace-screen').classList.add('hidden'); advanceFloor(); };
+            grid.appendChild(btn);
+        });
+    }
+
+    window.cancelReplace = function() { document.getElementById('replace-screen').classList.add('hidden'); advanceFloor(); }
+
+    function advanceFloor() {
+        currentFloor++; player.level++;
+        player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.2)); // heal 20% each floor
+        player.maxHp += 10; player.atk += 5; // Passive scaling so player keeps up
+        startEncounter();
+    }
+
+    // --- MAIN LOOP ---
+    function gameLoop() {
+        frameCount++;
+        if (gameState === "TEXT" || gameState === "INTRO") {
+            if (isTyping && frameCount % typeSpeed === 0) {
+                typedText += currentText.charAt(textCharIndex); document.getElementById('dialogue-text').innerText = typedText; textCharIndex++;
+                if (textCharIndex >= currentText.length) { isTyping = false; document.getElementById('dialogue-arrow').classList.remove('hidden'); }
+            }
+        } else if (gameState === "CLASH") {
+            clashTimer--; clashValue -= 1.5; updateClashUI();
+            if(frameCount%2===0) emitParticles(120 + (clashValue-50)*2, 80, (Math.random()>0.5?'#3b82f6':'#ef4444'), 2, 6, 15);
+            if (clashValue >= 100 || clashValue <= 0 || clashTimer <= 0) resolveClash();
+        }
+        updateParticles(); renderGame(); requestAnimationFrame(gameLoop);
+    }
+    
+    requestAnimationFrame(gameLoop);
+
+</script>
+</body>
+</html>
